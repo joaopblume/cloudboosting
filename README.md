@@ -50,4 +50,15 @@ sudo systemctl restart apache2
 apache2ctl -M | grep wsgi
 
 ## Install Django
-python -m pip install Django
+python -m pip install Django djangorestframework django-cors-headers
+
+cd cloudb
+django-admin startproject api_root .
+python3 manage.py startapp api_rest
+python3 manapy.py runserv
+
+python manage.py migrate
+
+
+python manage.py makemigrations api_rest
+python manage.py migrate
