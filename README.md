@@ -62,3 +62,7 @@ python manage.py migrate
 
 python manage.py makemigrations api_rest
 python manage.py migrate
+
+python manage.py createsuperuser
+-- admin
+-- admin
