@@ -92,6 +92,7 @@ def validar_credenciais_aws(access_key, secret_key):
         return False
     
 
+
 def listar_instancias_aws(credentials):
     # Inicializar o cliente EC2 com as credenciais do usuário
     session = boto3.Session(

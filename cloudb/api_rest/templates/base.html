@@ -1,20 +1,32 @@
-<!-- templates/base.html -->
-
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Cloud Boosting{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {% block extra_css %}
-    <!-- Bloco para estilos adicionais -->
-    {% endblock %}
+    <title>{% block title %}Cloud Boosting{% endblock %}</title>
+
+    <!-- Incluindo o arquivo CSS principal -->
+    <link rel="stylesheet" href="{% static 'api_rest/css/styles.css' %}">
+    
+    <style>
+        /* Cor de fundo padrão para o projeto */
+        body {
+            background-color: #343541;
+            color: #e0e0e0; /* Cor do texto */
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
-    {% block content %}
-    <!-- Conteúdo será injetado aqui -->
-    {% endblock %}
+    <div class="main-container">
+        {% block content %}{% endblock %}
+    </div>
+
+    {% block extra_js %}{% endblock %}
 </body>
 </html>
