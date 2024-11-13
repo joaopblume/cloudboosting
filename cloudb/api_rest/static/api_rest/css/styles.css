@@ -2,7 +2,7 @@
 
 /* Configurações gerais */
 body {
-    background-color: #343541; /* Cor de fundo semelhante ao ChatGPT */
+    background-color: #1d2029; /* Cor de fundo semelhante ao ChatGPT */
     color: #e0e0e0; /* Cor do texto */
     font-family: Arial, sans-serif;
     margin: 0;
@@ -202,14 +202,14 @@ a:hover {
 /* styles.css */
 
 .user-home-container {
-    max-width: 400px;
+    width: 400px;
     margin: 50px auto;
     padding: 20px;
     background-color: #2b2d42;
     border-radius: 10px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-    text-align: center;
-}
+    text-align: center; 
+}   
 
 .user-home-container h2 {
     color: #ffffff;
@@ -262,7 +262,7 @@ a:hover {
 .parent {
     display: flex;
     min-height: 100vh; /* Altura de 100% da viewport */
-    color: #3f414e;
+    color: #1b1b1b;
 }
 
 /* Estilo para os containers de registro e login */
