@@ -61,7 +61,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        'DIRS': [os.path.join(BASE_DIR, 'templates/registration')],
+        'DIRS': [os.path.join(BASE_DIR, 'api_rest/templates/registration')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -136,4 +136,4 @@ CORS_ALLOW_ORIGENS = [
     'http://localhost:8080'
 ]
 
-LOGIN_REDIRECT_URL = '/api_rest/oci/credentials/'
+LOGIN_REDIRECT_URL = 'user_home'

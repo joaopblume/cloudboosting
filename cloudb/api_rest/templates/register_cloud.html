@@ -1,0 +1,13 @@
+<!-- register_cloud.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Registrar Nova Cloud</h2>
+<p>Escolha a cloud que deseja vincular:</p>
+<ul>
+    {% for cloud in clouds %}
+    <li><a href="{% url 'cloud_credentials' cloud.url %}">{{ cloud.name }}</a></li>
+    {% endfor %}
+</ul>
+{% endblock %}

@@ -1,9 +1,15 @@
 from django.urls import path
 from . import views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('register_cloud/', views.register_cloud, name='register_cloud'),
+    path('register_cloud/<str:cloud_name>/', views.cloud_credentials, name='cloud_credentials'),
     path('oci/credentials/', views.oci_credentials_view, name='oci_credentials'),
-    path('accounts/register/', views.registrar, name='register'),
-    path('oci/instances/', views.listar_instancias_view, name='listar_instancias'),
+    path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
+    path('register/', views.register, name='register'),
+    #path('oci/instances/', views.listar_instancias_view, name='listar_instancias'),
+    path('cloud/<int:cloud_id>/instancias/', views.listar_instancias_cloud, name='listar_instancias_cloud'),
+    path('home/', views.user_home, name='user_home'),
 ]

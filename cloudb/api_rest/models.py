@@ -14,6 +14,14 @@ class OCICredentials(models.Model):
 
     def __str__(self):
         return f"Credenciais OCI de {self.user.username}"
+    
+class UserCloud(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    cloud_type = models.CharField(max_length=50, choices=[('OCI', 'Oracle Cloud Infrastructure'), ('AWS', 'Amazon Web Services'), ('Azure', 'Microsoft Azure')])
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.cloud_type}"
 
 # class CloudProvider(models.Model):
 #     name = models.CharField(max_length=100)

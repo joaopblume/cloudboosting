@@ -43,7 +43,7 @@ def get_all_compartments(identity_client, tenancy_id):
     return compartments
 
 
-def listar_instancias(creds):
+def listar_instancias_oci(creds):
     config = create_oci_config(creds)
     compute_client = oci.core.ComputeClient(config)
     identity_client = oci.identity.IdentityClient(config)

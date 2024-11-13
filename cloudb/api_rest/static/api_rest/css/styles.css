@@ -144,3 +144,87 @@ a:hover {
     text-align: center;
     margin-bottom: 20px;
 }
+
+/* Estilo para a página inicial */
+.index-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+    color: #ffffff;
+}
+
+.index-container h1 {
+    font-size: 3em;
+    margin-bottom: 20px;
+}
+
+.buttons .btn {
+    font-size: 1.2em;
+    padding: 10px 20px;
+    margin: 10px;
+    text-decoration: none;
+    color: #ffffff;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: #00a884;
+}
+
+.btn-secondary {
+    background-color: #4a90e2;
+}
+
+/* Estilo para a página de registro */
+.register-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #40414f;
+    border-radius: 10px;
+    color: #ffffff;
+    text-align: center;
+}
+
+/* Estilo para a página de login */
+.login-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #40414f;
+    border-radius: 10px;
+    color: #ffffff;
+    text-align: center;
+}
+
+/* Estilo para a home do usuário */
+.user-home-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #40414f;
+    border-radius: 10px;
+    color: #ffffff;
+}
+
+.user-home-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.user-home-container ul {
+    list-style-type: none;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+.user-home-container ul li {
+    background-color: #333;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 5px;
+}

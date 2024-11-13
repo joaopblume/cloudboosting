@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Cloud Boosting</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    {% load static %}
+    {% block extra_css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'api_rest/css/styles.css' %}">
+    {% endblock %}
 </head>
 <body>
     <div class="index-container">

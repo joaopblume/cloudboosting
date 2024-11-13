@@ -1,18 +1,12 @@
-<!-- templates/registration/login.html -->
-
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container">
+<div class="login-container">
     <h2>Login</h2>
-    {% if form.errors %}
-        <p style="color: red;">Nome de usuário ou senha incorretos.</p>
-    {% endif %}
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Entrar</button>
+        <button type="submit" class="btn btn-primary">Entrar</button>
     </form>
-    <p>Ainda não tem uma conta? <a href="{% url 'register' %}">Registre-se</a></p>
 </div>
 {% endblock %}

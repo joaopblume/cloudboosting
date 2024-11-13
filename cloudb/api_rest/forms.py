@@ -13,10 +13,3 @@ class OCICredentialsForm(forms.ModelForm):
             'private_key': forms.Textarea(attrs={'rows': 4, 'cols': 40}),
         }
 
-
-class RegistroForm(UserCreationForm):
-    email = forms.EmailField(required=True)
-
-    class Meta:
-        model = User
-        fields = ("username", "email", "password1", "password2")
