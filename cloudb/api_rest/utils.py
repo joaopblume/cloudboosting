@@ -1,7 +1,9 @@
 # utils.py
 
 import oci
-from oci.core import ComputeClient
+import boto3
+from botocore.exceptions import NoCredentialsError, PartialCredentialsError
+
 
 
 
@@ -77,3 +79,37 @@ def listar_instancias_oci(creds):
 
     return instances
 
+def validar_credenciais_aws(access_key, secret_key):
+    try:
+        client = boto3.client(
+            'sts',
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key
+        )
+        client.get_caller_identity()  # Valida as credenciais
+        return True
+    except (NoCredentialsError, PartialCredentialsError):
+        return False
+    
+
+def listar_instancias_aws(credentials):
+    # Inicializar o cliente EC2 com as credenciais do usuário
+    session = boto3.Session(
+        aws_access_key_id=credentials.access_key,
+        aws_secret_access_key=credentials.secret_key,
+        region_name='us-east-1'  # Certifique-se de que a região está configurada nas credenciais
+    )
+    
+    ec2 = session.client('ec2')
+    response = ec2.describe_instances()
+    
+    instances = []
+    for reservation in response["Reservations"]:
+        for instance in reservation["Instances"]:
+            instances.append({
+                'id': instance["InstanceId"],
+                'display_name': next((tag['Value'] for tag in instance.get('Tags', []) if tag['Key'] == 'Name'), 'N/A'),
+                'lifecycle_state': instance["State"]["Name"].upper(),
+            })
+    
+    return instances

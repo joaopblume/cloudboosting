@@ -1,9 +1,7 @@
-# forms.py
-
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
+
 from .models import OCICredentials
+from .models import AWSCredentials
 
 class OCICredentialsForm(forms.ModelForm):
     class Meta:
@@ -13,3 +11,8 @@ class OCICredentialsForm(forms.ModelForm):
             'private_key': forms.Textarea(attrs={'rows': 4, 'cols': 40}),
         }
 
+
+class AWSCredentialsForm(forms.ModelForm):
+    class Meta:
+            model = AWSCredentials
+            fields = ['access_key', 'secret_key']

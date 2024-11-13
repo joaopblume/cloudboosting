@@ -1,11 +1,19 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'api_rest/css/styles.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="user-home-container">
     <h2>Clouds Vinculadas</h2>
     <ul>
         {% if user.usercloud_set.exists %}
             {% for cloud in user.usercloud_set.all %}
-                <li>
-                    <a href="{% url 'listar_instancias_cloud' cloud.id %}">
+                <li class="cloud-item">
+                    <a href="{% url 'listar_instancias_cloud' cloud.id %}" class="cloud-link">
                         {{ cloud.get_cloud_type_display }}
                     </a>
                 </li>
@@ -14,6 +22,6 @@
             <li>Você ainda não possui clouds vinculadas.</li>
         {% endif %}
     </ul>
-    <a href="{% url 'register_cloud' %}" class="btn btn-secondary">Cadastrar Nova Cloud</a>
+    <a href="{% url 'register_cloud' %}" class="btn btn-secondary add-cloud-btn">Cadastrar Nova Cloud</a>
 </div>
 {% endblock %}

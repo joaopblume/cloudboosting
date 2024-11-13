@@ -9,7 +9,7 @@ urlpatterns = [
     path('oci/credentials/', views.oci_credentials_view, name='oci_credentials'),
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
     path('register/', views.register, name='register'),
-    #path('oci/instances/', views.listar_instancias_view, name='listar_instancias'),
     path('cloud/<int:cloud_id>/instancias/', views.listar_instancias_cloud, name='listar_instancias_cloud'),
+    path('aws/credentials/', views.aws_credentials_view, name='aws_credentials'),
     path('home/', views.user_home, name='user_home'),
 ]
