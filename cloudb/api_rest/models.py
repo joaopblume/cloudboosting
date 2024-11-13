@@ -8,7 +8,9 @@ class OCICredentials(models.Model):
     user_ocid = encrypt(models.CharField(max_length=100))
     fingerprint = encrypt(models.CharField(max_length=100))
     private_key = encrypt(models.TextField())
-    compartment_id = encrypt(models.CharField(max_length=100))
+    # Adiciona vinhedo como default do region
+    region = encrypt(models.CharField(max_length=50, default="sa-vinhedo-1"))
+    # Outros campos conforme necessário
 
     def __str__(self):
         return f"Credenciais OCI de {self.user.username}"

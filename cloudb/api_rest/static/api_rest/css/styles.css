@@ -83,3 +83,64 @@ a:hover {
 .errorlist li {
     margin-bottom: 5px;
 }
+
+/* Container para o grid */
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* Card das instâncias */
+.card {
+    border: none;
+    border-radius: 10px;
+    background-color: #40414f;
+    padding: 20px;
+    color: #ffffff;
+}
+
+/* Título do card */
+.card-title {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+/* Texto do card */
+.card-text {
+    font-size: 1em;
+    margin-bottom: 5px;
+}
+
+/* Indicador de status */
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.status-green {
+    background-color: green;
+}
+
+.status-red {
+    background-color: red;
+}
+
+.status-yellow {
+    background-color: yellow;
+}
+
+/* Estilo do título principal */
+.container h2 {
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 20px;
+}

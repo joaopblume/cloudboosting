@@ -8,7 +8,7 @@ from .models import OCICredentials
 class OCICredentialsForm(forms.ModelForm):
     class Meta:
         model = OCICredentials
-        fields = ['tenancy_ocid', 'user_ocid', 'fingerprint', 'private_key', 'compartment_id']
+        fields = ['tenancy_ocid', 'user_ocid', 'fingerprint', 'private_key', 'region']
         widgets = {
             'private_key': forms.Textarea(attrs={'rows': 4, 'cols': 40}),
         }
