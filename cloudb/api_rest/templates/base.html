@@ -1,0 +1,20 @@
+<!-- templates/base.html -->
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Cloud Boosting{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block extra_css %}
+    <!-- Bloco para estilos adicionais -->
+    {% endblock %}
+</head>
+<body>
+    {% block content %}
+    <!-- Conteúdo será injetado aqui -->
+    {% endblock %}
+</body>
+</html>

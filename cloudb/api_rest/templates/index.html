@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Cloud Boosting</title>
+    {% load static %}
+    {% block extra_css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'api_rest/css/styles.css' %}">
+    {% endblock %}
+</head>
+<body>
+    <div class="index-container">
+        <h1>Cloud Boosting</h1>
+        <div class="buttons">
+            <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+            <a href="{% url 'register' %}" class="btn btn-secondary">Registrar</a>
+        </div>
+    </div>
+</body>
+</html>

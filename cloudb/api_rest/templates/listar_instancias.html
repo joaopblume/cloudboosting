@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'api_rest/css/styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="grid-container">
+    {% for instance in instances %}
+    <div class="card">
+        <div class="card-title">{{ instance.display_name }}</div>
+        <div class="card-text">Compartment: {{ instance.compartment_name }}</div>
+        <div class="card-text">
+            <span class="status-indicator 
+                  {% if instance.lifecycle_state == 'RUNNING' %}status-green
+                  {% elif instance.lifecycle_state == 'STOPPED' %}status-red
+                  {% else %}status-yellow{% endif %}">
+            </span> {{ instance.lifecycle_state }}
+        </div>
+    </div>
+    {% empty %}
+    <div class="card">
+        <p>Nenhuma instância encontrada.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
