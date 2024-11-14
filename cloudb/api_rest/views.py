@@ -117,19 +117,6 @@ def login_view(request):
         form = AuthenticationForm()
     return render(request, 'login.html', {'form': form})
 
-'''
-@login_required
-def listar_instancias_view(request):
-    try:
-        creds = OCICredentials.objects.get(user=request.user)
-    except OCICredentials.DoesNotExist:
-        # Redirecionar para a página de configuração das credenciais
-        return redirect('oci_credentials')
-
-    instances = listar_instancias(creds)
-    return render(request, 'listar_instancias.html', {'instances': instances})
-'''
-
 @login_required
 def user_home(request):
     user_clouds = UserCloud.objects.filter(user=request.user)

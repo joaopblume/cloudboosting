@@ -42,6 +42,9 @@ INSTALLED_APPS = [
     'corsheaders',
     'api_rest',
     'django_cryptography',
+    'tailwind',
+    'theme',
+    'django_browser_reload'
 ]
 
 MIDDLEWARE = [
@@ -53,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
 
 ROOT_URLCONF = 'api_root.urls'
@@ -137,3 +141,11 @@ CORS_ALLOW_ORIGENS = [
 ]
 
 LOGIN_REDIRECT_URL = 'user_home'
+
+TAILWIND_APP_NAME = 'theme'
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
+
+NPM_BIN_PATH = '/usr/bin/npm'

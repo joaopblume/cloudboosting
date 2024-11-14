@@ -10,6 +10,8 @@
 <div class="parent">
 
     <div class="user-home-container">
+        <h1>Bem-vindo {{ user.username }}!</h1>
+
         <h2>Clouds Vinculadas</h2>
         <ul>
             {% if user.usercloud_set.exists %}
