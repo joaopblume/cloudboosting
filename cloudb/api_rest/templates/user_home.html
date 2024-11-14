@@ -7,21 +7,26 @@
 {% endblock %}
 
 {% block content %}
-<div class="user-home-container">
-    <h2>Clouds Vinculadas</h2>
-    <ul>
-        {% if user.usercloud_set.exists %}
-            {% for cloud in user.usercloud_set.all %}
-                <li class="cloud-item">
-                    <a href="{% url 'listar_instancias_cloud' cloud.id %}" class="cloud-link">
-                        {{ cloud.get_cloud_type_display }}
-                    </a>
-                </li>
-            {% endfor %}
-        {% else %}
-            <li>Você ainda não possui clouds vinculadas.</li>
-        {% endif %}
-    </ul>
-    <a href="{% url 'register_cloud' %}" class="btn btn-secondary add-cloud-btn">Cadastrar Nova Cloud</a>
+<div class="parent">
+
+    <div class="user-home-container">
+        <h1>Bem-vindo {{ user.username }}!</h1>
+
+        <h2>Clouds Vinculadas</h2>
+        <ul>
+            {% if user.usercloud_set.exists %}
+                {% for cloud in user.usercloud_set.all %}
+                    <li class="cloud-item">
+                        <a href="{% url 'listar_instancias_cloud' cloud.id %}" class="cloud-link">
+                            {{ cloud.get_cloud_type_display }}
+                        </a>
+                    </li>
+                {% endfor %}
+            {% else %}
+                <li>Você ainda não possui clouds vinculadas.</li>
+            {% endif %}
+        </ul>
+        <a href="{% url 'register_cloud' %}" class="btn btn-secondary add-cloud-btn">Cadastrar Nova Cloud</a>
+    </div>
 </div>
 {% endblock %}

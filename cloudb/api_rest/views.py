@@ -10,6 +10,7 @@ from .models import AWSCredentials
 from .models import UserCloud
 from .utils import listar_instancias_oci, create_oci_config, validar_credenciais, validar_credenciais_aws, listar_instancias_aws
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm
 
 
 
@@ -101,18 +102,20 @@ def register(request):
         form = UserCreationForm()
     return render(request, 'register.html', {'form': form})
 
-'''
-@login_required
-def listar_instancias_view(request):
-    try:
-        creds = OCICredentials.objects.get(user=request.user)
-    except OCICredentials.DoesNotExist:
-        # Redirecionar para a página de configuração das credenciais
-        return redirect('oci_credentials')
-
-    instances = listar_instancias(creds)
-    return render(request, 'listar_instancias.html', {'instances': instances})
-'''
+def login_view(request):
+    # Página de login
+    if request.method == 'POST':
+        form = AuthenticationForm(request, request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user:
+                login(request, user)
+                return redirect('user_home')
+    else:
+        form = AuthenticationForm()
+    return render(request, 'login.html', {'form': form})
 
 @login_required
 def user_home(request):

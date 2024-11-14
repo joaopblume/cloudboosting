@@ -118,3 +118,17 @@ python manage.py createsuperuser
 
 Follow the prompts to set the username and password for the superuser.
 ```
+Instalar o NODE JS
+
+python cloudb/manage.py tailwind init
+python cloudb/manage.py tailwind install
+python cloudb/manage.py tailwind start
+
+
+https://stackoverflow.com/questions/67938486/after-installing-npm-on-wsl-ubuntu-20-04-i-get-the-message-usr-bin-env-bash
+
+chmod -R a+x node_modules
+
+
+FOR PRODUCTION USE
+python cloudb/manage.py tailwind build

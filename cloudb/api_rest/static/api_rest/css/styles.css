@@ -2,7 +2,7 @@
 
 /* Configurações gerais */
 body {
-    background-color: #343541; /* Cor de fundo semelhante ao ChatGPT */
+    background-color: #1d2029; /* Cor de fundo semelhante ao ChatGPT */
     color: #e0e0e0; /* Cor do texto */
     font-family: Arial, sans-serif;
     margin: 0;
@@ -13,7 +13,7 @@ body {
 .container {
     max-width: 600px;
     margin: 50px auto;
-    background-color: #40414f;
+    background-color: #3f414e;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
@@ -27,7 +27,6 @@ h2 {
 
 /* Formulário */
 form {
-    display: flex;
     flex-direction: column;
 }
 
@@ -179,84 +178,6 @@ a:hover {
     background-color: #4a90e2;
 }
 
-/* Estilo para a página de registro */
-.register-container {
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #40414f;
-    border-radius: 10px;
-    color: #ffffff;
-    text-align: center;
-}
-
-/* Estilo para a página de login */
-.login-container {
-    max-width: 400px;
-    margin: 0 auto;
-    margin-top: 10%;
-    padding: 30px 100px;
-    background-color: #40414f;
-    border-radius: 10px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
-    text-align: center;
-    color: #ffffff;
-}
-
-.login-container h2 {
-    font-size: 1.8em;
-    margin-bottom: 30px;
-    font-weight: bold;
-    color: #e0e0e0;
-}
-
-/* Inputs estilizados */
-.login-container label {
-    display: block;
-    font-size: 0.9em;
-    color: #00a884;
-    margin-bottom: 5px;
-    text-align: left;
-}
-
-.login-container input[type="text"],
-.login-container input[type="password"] {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    background-color: #333542;
-    color: #e0e0e0;
-    border: none;
-    border-bottom: 2px solid #00a884;
-    border-radius: 4px;
-    outline: none;
-    transition: border-bottom-color 0.3s ease;
-}
-
-.login-container input[type="text"]:focus,
-.login-container input[type="password"]:focus {
-    border-bottom-color: #4a90e2;
-}
-
-/* Botão de envio */
-.login-container button[type="submit"] {
-    background-color: #00a884;
-    color: #ffffff;
-    font-size: 1em;
-    padding: 10px;
-    width: 100%;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    /* alinhas horizontalmente o botao com o meio do H2 Login*/
-}
-
-.login-container button[type="submit"]:hover {
-    background-color: #00846f;
-}
-
-
 /* Estilo para a home do usuário */
 .user-home-container {
     max-width: 600px;
@@ -279,14 +200,14 @@ a:hover {
 /* styles.css */
 
 .user-home-container {
-    max-width: 400px;
+    width: 400px;
     margin: 50px auto;
     padding: 20px;
     background-color: #2b2d42;
     border-radius: 10px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-    text-align: center;
-}
+    text-align: center; 
+}   
 
 .user-home-container h2 {
     color: #ffffff;
@@ -335,3 +256,87 @@ a:hover {
     background-color: #357abd;
 }
 
+/* Estilo para o elemento pai que centraliza o conteúdo */
+.parent {
+    display: flex;
+    min-height: 100vh; /* Altura de 100% da viewport */
+    color: #1b1b1b;
+}
+
+/* Estilo para os containers de registro e login */
+.auth-container {
+    margin: auto;
+    max-width: 400px;
+    width: 400px;
+    height: 800px;
+    padding: 30px;
+    background-color: #21242d;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+    color: #ffffff;
+}
+
+/* Outros estilos permanecem inalterados */
+.auth-container h2 {
+    font-size: 1.8em;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #e0e0e0;
+}
+
+/* Inputs estilizados */
+.auth-container label {
+    display: block;
+    font-size: 0.9em;
+    color: #ff7300;
+    text-align: left;
+}
+
+.auth-container input[type="text"],
+.auth-container input[type="password"] {
+    width: 90%;
+    padding: 10px;
+    background-color: #333542;
+    color: #e0e0e0;
+    border: none;
+    border-bottom: 2px solid #ff7300;
+    border-radius: 4px;
+    outline: none;
+    transition: border-bottom-color 0.3s ease;
+}
+
+.auth-container input[type="text"]:focus,
+.auth-container input[type="password"]:focus {
+    border-bottom-color: #4a90e2;
+}
+
+
+.gif-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 30%;
+    opacity: 0.8;
+}
+
+.login-gif {
+    width: 300px; /* Ajuste o tamanho conforme necessário */
+    height: auto;
+    border-radius: 8px;
+}
+
+/* Botão de envio */
+.auth-container button[type="submit"] {
+    background-color: #ff7300;
+    color: #ffffff;
+    font-size: 1em;
+    padding: 10px;
+    width: 96%;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.auth-container button[type="submit"]:hover {
+    background-color: #f7980a;
+}
