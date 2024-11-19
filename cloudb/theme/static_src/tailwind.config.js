@@ -3,9 +3,13 @@
  *
  * If you need the full config, get it from here:
  * https://unpkg.com/browse/tailwindcss@latest/stubs/defaultConfig.stub.js
+ * 
  */
+/** @type {import('tailwindcss').Config} */
 
 module.exports = {
+    darkMode: 'selector',
+
     content: [
         /**
          * HTML. Paths to Django template files that will contain Tailwind CSS classes.
@@ -43,8 +47,14 @@ module.exports = {
     ],
     theme: {
         extend: {
+          colors: {
+            oserv: {
+              900: '#00102e',
+            },
+          },
           fontFamily: {
             sans: ['Doto', 'ui-sans-serif', 'system-ui'],
+            rubik: ['"Rubik 80s Fade"', 'cursive'],
           },
         },
       },

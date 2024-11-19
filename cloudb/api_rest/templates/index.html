@@ -1,20 +1,19 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Cloud Boosting</title>
-    {% load static %}
-    {% block extra_css %}
-    <link rel="stylesheet" type="text/css" href="{% static 'api_rest/css/styles.css' %}">
-    {% endblock %}
-</head>
-<body>
-    <div class="index-container">
-        <h1>Cloud Boosting</h1>
-        <div class="buttons">
-            <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
-            <a href="{% url 'register' %}" class="btn btn-secondary">Registrar</a>
-        </div>
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Doto:wght@800&family=Rubik+80s+Fade&display=swap" rel="stylesheet">
+
+<div class="flex flex-col items-center justify-center min-h-screen bg-orange-500 text-white">
+        <h1 class="text-9xl font-medium mb-8 animate-pulse text-white-600 font-rubik">Cloud Boosting</h1>
+    <div class="flex space-x-4">
+        <a href="{% url 'login' %}" class="bg-blue-800 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            Login
+        </a>
+        <a href="{% url 'register' %}" class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded">
+            Registrar
+        </a>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}
