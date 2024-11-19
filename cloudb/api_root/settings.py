@@ -148,4 +148,4 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
-NPM_BIN_PATH = '/usr/bin/npm'
+NPM_BIN_PATH = '/home/joao/django-cloudb/cloudboosting/node-v22.11.0-linux-x64/bin/npm'

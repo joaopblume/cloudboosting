@@ -3,20 +3,29 @@
 {% load static %}
 
 {% block extra_css %}
+<!-- Não há necessidade de estilos personalizados aqui, usamos Tailwind -->
 {% endblock %}
 
 {% block content %}
-<div class="parent">
-    <div class="auth-container">
-        <h2>Login</h2>
-        <form method="post" action="{% url 'login' %}">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">Submit</button>
-            <div class="gif-container">
-                <img src="{% static 'images/rocket.gif' %}" alt="Loading GIF" class="login-gif">
-            </div>
-        </form>
+<div class="min-h-screen bg-cover bg-center" style="background-image: url('{% static 'images/hexagon.png' %}');">
+    <div class="flex items-center justify-center min-h-screen">
+        <div class="bg-black bg-opacity-80 text-white rounded-lg shadow-lg p-10 w-full max-w-lg">
+            <h2 class="text-2xl font-bold text-center mb-6">Login</h2>
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                <div class="space-y-4">
+                    {{ form.as_p }}
+                </div>
+                <button 
+                    type="submit" 
+                    class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg mt-6 transition duration-200"
+                >
+                    Submit
+                </button>
+                <div class="mt-4"> 
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}

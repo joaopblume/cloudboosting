@@ -119,6 +119,9 @@ python manage.py createsuperuser
 Follow the prompts to set the username and password for the superuser.
 ```
 Instalar o NODE JS
+https://nodejs.org/dist/v22.11.0/node-v22.11.0-linux-x64.tar.xz
+export NODEJS_HOME=/home/joao/django-cloudb/cloudboosting/node-v22.11.0-linux-x64/bin
+export PATH=$NODEJS_HOME:$PATH
 
 python cloudb/manage.py tailwind init
 python cloudb/manage.py tailwind install
