@@ -130,7 +130,9 @@ STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [
     BASE_DIR / 'api_rest' / 'static',
+    BASE_DIR / 'api_rest' / "scripts",  # Adicione este diretório
 ]
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -148,4 +150,5 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
-NPM_BIN_PATH = '/home/joao/django-cloudb/cloudboosting/node-v22.11.0-linux-x64/bin/npm'
+# NPM_BIN_PATH = '/home/joao/django-cloudb/cloudboosting/node-v22.11.0-linux-x64/bin/npm'
+NPM_BIN_PATH = '/usr/bin/npm'
