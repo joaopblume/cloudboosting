@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-orange-500 flex justify-center items-center">
+    <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-4xl p-8">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">Schedule Instance</h1>
+
+        <form method="post" action="">
+            {% csrf_token %}
+
+            <!-- Frequência do Backup -->
+            <div class="mb-6">
+                <label class="block text-lg font-semibold text-gray-800 mb-2">Backup Frequency:</label>
+                <div class="flex space-x-4">
+                    <label class="flex items-center space-x-2">
+                        <input type="radio" name="frequency" value="daily" class="h-5 w-5 text-blue-500" checked>
+                        <span class="text-gray-800">Daily</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="radio" name="frequency" value="monthly" class="h-5 w-5 text-blue-500">
+                        <span class="text-gray-800">Monthly</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Opções do Daily -->
+            <div id="daily-options">
+                <!-- Dias da Semana -->
+                <div class="mb-6">
+                    <label class="block text-lg font-semibold text-gray-800 mb-2">Days of Week:</label>
+                    <div class="grid grid-cols-7 gap-2">
+                        {% for day in week_days %}
+                        <button type="button" data-value="{{ day }}" class="day-button bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition duration-300">
+                            {{ day }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="week_days" id="selected-days" class="text-gray-800">
+                </div>
+
+                <!-- Horário -->
+                <div class="mb-6">
+                    <label class="block text-lg font-semibold text-gray-800 mb-2">Time:</label>
+                    <div class="flex items-center space-x-4">
+                        <label class="flex items-center space-x-2">
+                            <input type="radio" name="time_option" value="specific" class="h-5 w-5 text-blue-500" checked>
+                            <span class="text-gray-800">At Specific Time</span>
+                        </label>
+                        <input type="time" name="specific_time" class="border rounded-lg px-4 py-2 w-32 text-gray-800">
+                        <label class="flex items-center space-x-2">
+                            <input type="radio" name="time_option" value="several" class="h-5 w-5 text-blue-500">
+                            <span class="text-gray-800">Several Times a Day</span>
+                        </label>
+                    </div>
+                    <div id="several-times-options" class="hidden mt-4">
+                        <div class="mb-4 flex items-center space-x-4">
+                            <label class="block text-lg font-semibold text-gray-800">Every:</label>
+                            <input type="number" name="interval" value="1" min="1" class="border rounded-lg px-4 py-2 w-20 text-center text-gray-800">
+                            <select name="interval_unit" class="border rounded-lg px-4 py-2 text-gray-800">
+                                <option value="hours">Hour(s)</option>
+                                <option value="minutes">Minute(s)</option>
+                            </select>
+                        </div>
+                        <div class="mb-4 flex items-center space-x-4">
+                            <label class="block text-lg font-semibold text-gray-800">From:</label>
+                            <input type="time" name="time_from" class="border rounded-lg px-4 py-2 w-32 text-gray-800">
+                            <label class="block text-lg font-semibold text-gray-800">To:</label>
+                            <input type="time" name="time_to" class="border rounded-lg px-4 py-2 w-32 text-gray-800">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Opções do Monthly -->
+            <div id="monthly-options" class="hidden">
+                <div class="mb-6">
+                    <label class="block text-lg font-semibold text-gray-800 mb-2">Occurrence:</label>
+                    <select name="occurrence" id="occurrence-select" class="border rounded-lg px-4 py-2 w-full text-gray-800">
+                        <option value="day_of_month">Day of Month</option>
+                        <option value="first">First</option>
+                        <option value="second">Second</option>
+                        <option value="third">Third</option>
+                        <option value="fourth">Fourth</option>
+                        <option value="penultimate">Penultimate</option>
+                        <option value="last">Last</option>
+                    </select>
+                </div>
+                <div id="day-container" class="mb-6">
+                    <label id="day-label" class="block text-lg font-semibold text-gray-800 mb-2">Day of the Week:</label>
+                    <select id="day-of-week-select" name="day_of_week" class="border rounded-lg px-4 py-2 w-full text-gray-800">
+                        <option value="sunday">Sunday</option>
+                        <option value="monday">Monday</option>
+                        <option value="tuesday">Tuesday</option>
+                        <option value="wednesday">Wednesday</option>
+                        <option value="thursday">Thursday</option>
+                        <option value="friday">Friday</option>
+                        <option value="saturday">Saturday</option>
+                    </select>
+                    <input id="calendar-day-input" type="number" name="calendar_day" min="1" max="31" class="text-gray-800 hidden border rounded-lg px-4 py-2 w-full" placeholder="Enter day of month">
+                </div>
+            </div>
+
+            <!-- Repetição -->
+            <div class="mb-6">
+                <label class="block text-lg font-semibold text-gray-800 mb-2">Repeat Every:</label>
+                <div class="flex items-center space-x-4">
+                    <input type="number" name="repeat" min="1" value="1" class="text-gray-800 border rounded-lg px-4 py-2 w-16 text-center">
+                    <span id="repeat-unit" class="text-gray-800">week(s)</span>
+                </div>
+            </div>
+
+            <!-- Botões -->
+            <div class="flex justify-end space-x-4">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-bold transition duration-300">
+                    Save
+                </button>
+                <button type="button" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-lg font-bold transition duration-300">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const timeOptionRadios = document.querySelectorAll('input[name="time_option"]');
+        const severalTimesOptions = document.getElementById('several-times-options');
+        const frequencyOptions = document.querySelectorAll('input[name="frequency"]');
+        const dailyOptions = document.getElementById('daily-options');
+        const monthlyOptions = document.getElementById('monthly-options');
+        const occurrenceSelect = document.getElementById('occurrence-select');
+        const dayContainer = document.getElementById('day-container');
+        const dayLabel = document.getElementById('day-label');
+        const dayOfWeekSelect = document.getElementById('day-of-week-select');
+        const calendarDayInput = document.getElementById('calendar-day-input');
+        const dayButtons = document.querySelectorAll('.day-button');
+        const selectedDaysInput = document.getElementById('selected-days');
+        const selectedDays = [];
+        const addTimeSlotButton = document.getElementById('add-time-slot');
+        const timeSlotsContainer = document.getElementById('time-slots-container');
+        
+
+        // Alternar entre Daily e Monthly
+        frequencyOptions.forEach(option => {
+            option.addEventListener('change', function () {
+                if (this.value === 'daily') {
+                    dailyOptions.classList.remove('hidden');
+                    monthlyOptions.classList.add('hidden');
+                    document.getElementById('repeat-unit').textContent = 'week(s)';
+                } else {
+                    dailyOptions.classList.add('hidden');
+                    monthlyOptions.classList.remove('hidden');
+                    document.getElementById('repeat-unit').textContent = 'month(s)';
+                }
+            });
+        });
+
+        // Alternar entre Day of Week e Calendar Day
+        occurrenceSelect.addEventListener('change', function () {
+            if (this.value === 'day_of_month') {
+                // Alterar o rótulo e exibir o campo Calendar Day
+                dayLabel.textContent = 'Calendar Day:';
+                dayOfWeekSelect.classList.add('hidden');
+                calendarDayInput.classList.remove('hidden');
+            } else {
+                // Alterar o rótulo e exibir o campo Day of the Week
+                dayLabel.textContent = 'Day of the Week:';
+                calendarDayInput.classList.add('hidden');
+                dayOfWeekSelect.classList.remove('hidden');
+            }
+        });
+
+        // Seleção de dias da semana
+        dayButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const day = this.getAttribute('data-value');
+                if (selectedDays.includes(day)) {
+                    selectedDays.splice(selectedDays.indexOf(day), 1);
+                    this.classList.remove('bg-blue-500', 'text-white');
+                    this.classList.add('bg-gray-200', 'text-gray-800');
+                } else {
+                    selectedDays.push(day);
+                    this.classList.remove('bg-gray-200', 'text-gray-800');
+                    this.classList.add('bg-blue-500', 'text-white');
+                }
+                selectedDaysInput.value = selectedDays.join(',');
+            });
+        });
+
+        timeOptionRadios.forEach(radio => {
+            radio.addEventListener('change', function () {
+                if (this.value === 'several') {
+                    severalTimesOptions.classList.remove('hidden');
+                } else {
+                    severalTimesOptions.classList.add('hidden');
+                }
+            });
+        });
+
+        // Vários horários por dia
+        addTimeSlotButton.addEventListener('click', function () {
+            const newTimeSlot = document.createElement('input');
+            newTimeSlot.type = 'time';
+            newTimeSlot.name = 'time_slots[]';
+            newTimeSlot.className = 'border rounded-lg px-4 py-2 w-32 mb-2';
+            timeSlotsContainer.appendChild(newTimeSlot);
+        });
+    });
+</script>
+{% endblock %}

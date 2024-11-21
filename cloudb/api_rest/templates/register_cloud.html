@@ -1,15 +1,24 @@
 {% extends 'base.html' %}
-{% block content %}
 {% load static %}
-
-<div class="text-black">
-    <h2 class="text-black">Registrar Nova Cloud</h2>
-    <p class="text-black">Escolha a cloud que deseja vincular:</p>
-    <ul class="text-black">
+{% block content %}
+<div class="min-h-screen bg-orange-500 flex flex-col items-center pt-10">
+    <h1 class="text-3xl font-bold text-white mb-8">Vincular uma Cloud</h1>
+    
+    <!-- Barra de Seleção de Clouds -->
+    <div class="bg-white rounded-full shadow-lg w-10/12 max-w-3xl p-2 flex justify-around items-center">
         {% for cloud in clouds %}
-        <li><a href="{% url 'cloud_credentials' cloud.url %}">{{ cloud.name }}</a></li>
+        <a 
+            href="{% url 'cloud_credentials' cloud.url %}" 
+            class="flex flex-col items-center transform transition-transform hover:-translate-y-5 group">
+            <div class="h-16 w-16 bg-white rounded-full flex items-center justify-center shadow-md">
+                <img 
+                    src="{% static cloud.logo %}" 
+                    alt="{{ cloud.name }} Logo" 
+                    class="h-12 w-12 object-contain rounded-full">
+            </div>
+            <span class="text-gray-800 font-semibold group-hover:text-orange-500">{{ cloud.name }}</span>
+        </a>
         {% endfor %}
-    </ul>
+    </div>
 </div>
-
 {% endblock %}

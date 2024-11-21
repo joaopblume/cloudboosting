@@ -122,6 +122,53 @@ def user_home(request):
     user_clouds = UserCloud.objects.filter(user=request.user)
     return render(request, 'user_home.html', {'user_clouds': user_clouds})
 
+@login_required
+def agendar_vm(request, instance_id):
+    # Inicialize as variáveis necessárias
+    instance_name = None
+    cloud_type = None
+
+    # Itera pelas clouds do usuário e busca a instância pelo ID
+    user_clouds = UserCloud.objects.filter(user=request.user)
+    for cloud in user_clouds:
+        if cloud.cloud_type == 'OCI':
+            # Liste instâncias para OCI
+            credentials = get_object_or_404(OCICredentials, user=request.user)
+            instances = listar_instancias_oci(credentials)
+        elif cloud.cloud_type == 'AWS':
+            # Liste instâncias para AWS
+            credentials = get_object_or_404(AWSCredentials, user=request.user)
+            instances = listar_instancias_aws(credentials)
+        else:
+            instances = []  # Placeholder para futuras clouds
+
+        # Verifica se a instância está na lista
+        for instance in instances:
+            if instance['id'] == instance_id:
+                instance_name = instance['display_name']
+                cloud_type = cloud.cloud_type
+                break
+        if instance_name:
+            break
+
+    if not instance_name:
+        return render(request, 'error.html', {
+            'message': 'Instância não encontrada ou você não tem permissão para acessá-la.',
+        })
+
+    # Lista de dias da semana
+    week_days = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
+
+    # Contexto para renderizar o template
+    context = {
+        'instance_id': instance_id,
+        'instance_name': instance_name,
+        'cloud_type': cloud_type,
+        'week_days': week_days,
+    }
+    return render(request, 'agendar_vm.html', context)
+
+
 
 def index(request):
     return render(request, 'index.html')
@@ -129,9 +176,9 @@ def index(request):
 @login_required
 def register_cloud(request):
     clouds = [
-        {'name': 'OCI', 'url': 'oci'},
-        {'name': 'AWS', 'url': 'aws'},
-        {'name': 'Azure', 'url': 'azure'},
+        {'name': 'OCI', 'url': 'oci', 'logo': 'images/oci_logo.png' },
+        {'name': 'AWS', 'url': 'aws', 'logo': 'images/aws_logo.png'},
+        {'name': 'Azure', 'url': 'azure', 'logo': 'images/azure_logo.jpg'},
     ]
     return render(request, 'register_cloud.html', {'clouds': clouds})
 

@@ -1,19 +1,20 @@
+// dark_mode_toggle.js
 const themeToggle = document.getElementById('theme-toggle');
-const htmlElement = document.documentElement;
+const html = document.documentElement;
 
-// Verificar se o dark mode já foi ativado anteriormente
+// Carregar estado inicial do localStorage
 if (localStorage.getItem('theme') === 'dark') {
-htmlElement.classList.add('dark');
-themeToggle.checked = true; // Marca o toggle como "on"
+    html.classList.add('dark');
+    themeToggle.checked = true;
 }
 
-// Toggle do dark mode
+// Alternar o tema
 themeToggle.addEventListener('change', () => {
-if (themeToggle.checked) {
-    htmlElement.classList.add('dark');
-    localStorage.setItem('theme', 'dark'); // Salva como "dark"
-} else {
-    htmlElement.classList.remove('dark');
-    localStorage.setItem('theme', 'light'); // Salva como "light"
-}
+    if (themeToggle.checked) {
+        html.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+    } else {
+        html.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+    }
 });

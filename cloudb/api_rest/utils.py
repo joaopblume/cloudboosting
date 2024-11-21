@@ -71,13 +71,17 @@ def listar_instancias_oci(creds):
                 compartment_id=compartment_id
             )
             for instance in response.data:
-                # Adiciona o nome do compartimento ao objeto da instância
-                instance.compartment_name = compartment_map.get(compartment_id, 'Unknown')
-                instances.append(instance)
+                instances.append({
+                    'id': instance.id,
+                    'display_name': instance.display_name,
+                    'lifecycle_state': instance.lifecycle_state,
+                    'compartment_name': compartment_map.get(compartment_id, 'Unknown')
+                })
         except Exception as e:
             print(f"Erro ao listar instâncias no compartimento {compartment_id}: {e}")
 
     return instances
+
 
 def validar_credenciais_aws(access_key, secret_key):
     try:
