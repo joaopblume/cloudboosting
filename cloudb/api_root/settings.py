@@ -163,5 +163,5 @@ Q_CLUSTER = {
     'save_limit': 250,
     'queue_limit': 500,
     'label': 'Django Q2',
-    'orm': 'default',  # Backend para usar o banco de dados padrão
+    'orm': 'default', 
 }

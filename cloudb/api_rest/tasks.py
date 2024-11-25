@@ -1,6 +1,7 @@
 from time import sleep
 import logging
 from .models import InstanceSchedule, VM
+from django_q import async_task
 
 
 logger = logging.getLogger(__name__)
@@ -21,6 +22,13 @@ def handle_instance_schedule(schedule_id):
     except Exception as e:
         logger.error(f"Erro ao processar o agendamento {schedule_id}: {e}")
 
+
+def start_vm(instance_id):
+    """
+    Função que inicia a VM baseada no ID.
+    """
+    print(f"Iniciando a VM com ID {instance_id}")
+    # Aqui você chamaria sua API para iniciar a VM
         
 def manage_instance(instance_id, schedule_id):
     # Implemente a lógica para ligar/desligar a VM
