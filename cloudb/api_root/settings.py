@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'django_cryptography',
     'tailwind',
     'theme',
-    'django_browser_reload'
+    'django_browser_reload',
+    'django_q',
 ]
 
 MIDDLEWARE = [
@@ -130,7 +131,6 @@ STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [
     BASE_DIR / 'api_rest' / 'static',
-    BASE_DIR / 'api_rest' / "scripts",  # Adicione este diretório
 ]
 
 # Default primary key field type
@@ -150,5 +150,18 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
-NPM_BIN_PATH = '/home/joao/django-cloudb/cloudboosting/node-v22.11.0-linux-x64/bin/npm'
-#NPM_BIN_PATH = '/usr/bin/npm'
+#NPM_BIN_PATH = '/home/joao/django-cloudb/cloudboosting/node-v22.11.0-linux-x64/bin/npm'
+NPM_BIN_PATH = '/usr/bin/npm'
+
+Q_CLUSTER = {
+    'name': 'DjangoQ',
+    'workers': 4,
+    'recycle': 500,
+    'timeout': 60,
+    'django_redis': False, 
+    'compress': True,
+    'save_limit': 250,
+    'queue_limit': 500,
+    'label': 'Django Q2',
+    'orm': 'default',  # Backend para usar o banco de dados padrão
+}

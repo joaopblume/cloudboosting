@@ -8,9 +8,13 @@ from .forms import AWSCredentialsForm
 from .models import OCICredentials
 from .models import AWSCredentials
 from .models import UserCloud
+from .models import VM
 from .utils import listar_instancias_oci, create_oci_config, validar_credenciais, validar_credenciais_aws, listar_instancias_aws
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
+from django_q.tasks import async_task
+from django.http import HttpResponseBadRequest
+from .models import InstanceSchedule
 
 
 
@@ -68,27 +72,50 @@ def aws_credentials_view(request):
 @login_required
 def listar_instancias_cloud(request, cloud_id):
     user_cloud = get_object_or_404(UserCloud, id=cloud_id, user=request.user)
-
+    
+    # Verificar o tipo de nuvem
     if user_cloud.cloud_type == 'OCI':
-        # Obtenha as credenciais OCI do usuário
         credentials = get_object_or_404(OCICredentials, user=request.user)
-        
-        # Liste as instâncias OCI usando as credenciais
-        instances = listar_instancias_oci(credentials)
-    
+        api_instances = listar_instancias_oci(credentials)
     elif user_cloud.cloud_type == 'AWS':
-        # Obtenha as credenciais AWS do usuário
         aws_credentials = get_object_or_404(AWSCredentials, user=request.user)
-        
-        # Liste as instâncias AWS usando as credenciais
-        instances = listar_instancias_aws(aws_credentials)
-    
+        api_instances = listar_instancias_aws(aws_credentials)
     else:
-        instances = []  # Placeholder para futuras clouds como Azure
+        api_instances = []
+
+    # Buscar instâncias já salvas no banco
+    cached_instances = VM.objects.filter(user=request.user, cloud=user_cloud)
+    cached_ids = {vm.instance_id for vm in cached_instances}
+
+    # Atualizar cache com novas instâncias
+    for instance in api_instances:
+        if instance['id'] not in cached_ids:
+            VM.objects.create(
+                user=request.user,
+                cloud=user_cloud,
+                instance_id=instance['id'],
+                display_name=instance['display_name'],
+                cpu_count=instance.get('cpu_count', 0),
+                memory_gb=instance.get('memory_gb', 0.0),
+                lifecycle_state=instance['lifecycle_state'],
+                compartment_name=instance.get('compartment_name', ''),
+            )
+        else:
+            # Atualizar as instâncias já existentes
+            vm = cached_instances.get(instance_id=instance['id'])
+            vm.display_name = instance['display_name']
+            vm.cpu_count = instance.get('cpu_count', vm.cpu_count)
+            vm.memory_gb = instance.get('memory_gb', vm.memory_gb)
+            vm.lifecycle_state = instance['lifecycle_state']
+            vm.compartment_name = instance.get('compartment_name', vm.compartment_name)
+            vm.save()
+
+    # Retornar instâncias atualizadas do banco
+    all_instances = VM.objects.filter(user=request.user, cloud=user_cloud)
 
     return render(request, 'listar_instancias.html', {
         'cloud': user_cloud,
-        'instances': instances
+        'instances': all_instances
     })
 
 def register(request):
@@ -124,49 +151,52 @@ def user_home(request):
 
 @login_required
 def agendar_vm(request, instance_id):
-    # Inicialize as variáveis necessárias
-    instance_name = None
-    cloud_type = None
+    vm = get_object_or_404(VM, instance_id=instance_id, user=request.user)
+    user_cloud = vm.cloud
 
-    # Itera pelas clouds do usuário e busca a instância pelo ID
-    user_clouds = UserCloud.objects.filter(user=request.user)
-    for cloud in user_clouds:
-        if cloud.cloud_type == 'OCI':
-            # Liste instâncias para OCI
-            credentials = get_object_or_404(OCICredentials, user=request.user)
-            instances = listar_instancias_oci(credentials)
-        elif cloud.cloud_type == 'AWS':
-            # Liste instâncias para AWS
-            credentials = get_object_or_404(AWSCredentials, user=request.user)
-            instances = listar_instancias_aws(credentials)
-        else:
-            instances = []  # Placeholder para futuras clouds
+    if request.method == "POST":
+        frequency = request.POST.get("frequency")
+        week_days = request.POST.get("week_days", "")
+        time_option = request.POST.get("time_option")
+        specific_time = request.POST.get("specific_time")
+        interval = request.POST.get("interval")
+        interval_unit = request.POST.get("interval_unit")
+        time_from = request.POST.get("time_from")
+        time_to = request.POST.get("time_to")
+        occurrence = request.POST.get("occurrence")
+        day_of_week = request.POST.get("day_of_week")
+        calendar_day = request.POST.get("calendar_day")  # Pode ser vazio
 
-        # Verifica se a instância está na lista
-        for instance in instances:
-            if instance['id'] == instance_id:
-                instance_name = instance['display_name']
-                cloud_type = cloud.cloud_type
-                break
-        if instance_name:
-            break
+        # Validação condicional para campos opcionais
+        if frequency == "monthly" and occurrence == "day_of_month" and not calendar_day:
+            return HttpResponseBadRequest("Calendar day is required for 'Day of Month'.")
 
-    if not instance_name:
-        return render(request, 'error.html', {
-            'message': 'Instância não encontrada ou você não tem permissão para acessá-la.',
-        })
+        # Prepare os dados para salvar no banco
+        schedule_data = {
+            "instance_id": instance_id,
+            "user": request.user,
+            "frequency": request.POST.get("frequency"),
+            "week_days": request.POST.get("week_days", ""),
+            "specific_time": request.POST.get("specific_time") or None,
+            "time_option": request.POST.get("time_option"),
+            "interval": int(request.POST.get("interval")) if request.POST.get("interval") else None,
+            "interval_unit": request.POST.get("interval_unit"),
+            "time_from": request.POST.get("time_from") or None,
+            "time_to": request.POST.get("time_to") or None,
+            "occurrence": request.POST.get("occurrence"),
+            "day_of_week": request.POST.get("day_of_week"),
+            "calendar_day": int(request.POST.get("calendar_day")) if request.POST.get("calendar_day") else None,
+        }
+        # Salve os dados no banco
+        try:
+            schedule = InstanceSchedule.objects.create(**schedule_data)
+        except ValueError as e:
+            return HttpResponseBadRequest(str(e))
+        
+        return redirect("listar_instancias_cloud", cloud_id=user_cloud.id)
 
-    # Lista de dias da semana
-    week_days = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]
-
-    # Contexto para renderizar o template
-    context = {
-        'instance_id': instance_id,
-        'instance_name': instance_name,
-        'cloud_type': cloud_type,
-        'week_days': week_days,
-    }
-    return render(request, 'agendar_vm.html', context)
+    week_days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    return render(request, "agendar_vm.html", {"week_days": week_days, "instance_id": instance_id})
 
 
 

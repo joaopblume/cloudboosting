@@ -10,7 +10,7 @@
 
     <!-- Lista de Clouds do Usuário -->
     <div class="bg-white w-11/12 max-w-4xl rounded-lg shadow-lg p-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">Clouds Vinculadas</h2>
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Registered Clouds</h2>
         <ul class="space-y-4">
             {% for cloud in user.usercloud_set.all %}
             <li class="bg-gray-100 p-4 rounded-lg shadow-md flex justify-between items-center">
@@ -19,18 +19,18 @@
                     <p class="text-sm text-gray-600">ID: {{ cloud.id }}</p>
                 </div>
                 <a href="{% url 'listar_instancias_cloud' cloud.id %}" class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded transition duration-300">
-                    Ver Instâncias
+                    List Instances
                 </a>
             </li>
             {% empty %}
-            <p class="text-gray-600 text-center">Você ainda não possui clouds vinculadas.</p>
+            <p class="text-gray-600 text-center">You dont have any cloud registered.</p>
             {% endfor %}
         </ul>
     </div>
 
     <!-- Botão para Adicionar Nova Cloud -->
     <a href="{% url 'register_cloud' %}" class="mt-6 bg-green-500 hover:bg-green-400 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300">
-        Adicionar Nova Cloud
+        Add new cloud
     </a>
 </div>
 {% endblock %}

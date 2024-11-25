@@ -135,3 +135,6 @@ chmod -R a+x node_modules
 
 FOR PRODUCTION USE
 python cloudb/manage.py tailwind build
+
+https://pypi.org/project/django-q2/
+python cloudb/manage.py qcluster

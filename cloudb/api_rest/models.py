@@ -31,6 +31,39 @@ class UserCloud(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.cloud_type}"
 
+
+class VM(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='vms')
+    cloud = models.ForeignKey(UserCloud, on_delete=models.CASCADE, related_name='vms')
+    instance_id = models.CharField(max_length=100, unique=True)
+    display_name = models.CharField(max_length=255)
+    cpu_count = models.IntegerField()
+    memory_gb = models.FloatField()
+    lifecycle_state = models.CharField(max_length=50)
+    compartment_name = models.CharField(max_length=255, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.display_name} ({self.instance_id})"
+    
+
+class InstanceSchedule(models.Model):
+    instance_id = models.CharField(max_length=255)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    frequency = models.CharField(max_length=20, choices=[('daily', 'Daily'), ('monthly', 'Monthly')])
+    week_days = models.CharField(max_length=255, blank=True, null=True)
+    specific_time = models.TimeField(blank=True, null=True)
+    time_option = models.CharField(max_length=20, blank=True, null=True)  # Adicione esse campo
+    interval = models.IntegerField(blank=True, null=True)  # Adicione esse campo
+    interval_unit = models.CharField(max_length=20, blank=True, null=True)  # Adicione esse campo
+    time_from = models.TimeField(blank=True, null=True)  # Adicione esse campo
+    time_to = models.TimeField(blank=True, null=True)  # Adicione esse campo
+    occurrence = models.CharField(max_length=20, blank=True, null=True)
+    day_of_week = models.CharField(max_length=20, blank=True, null=True)  # Adicione esse campo
+    calendar_day = models.IntegerField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Schedule for {self.instance_id} by {self.user.username}"
 # class CloudProvider(models.Model):
 #     name = models.CharField(max_length=100)
 
