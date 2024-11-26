@@ -173,7 +173,6 @@ def agendar_vm(request, instance_id):
             "day_of_week": request.POST.get("day_of_week"),
             "calendar_day": int(request.POST.get("calendar_day")) if request.POST.get("calendar_day") else None,
         }
-        print(f"TIME OPTION: {schedule_data['time_option']}")
 
         # Rules for required fields
         if schedule_data["frequency"] == "monthly" and schedule_data["occurrence"] == "day_of_month" and not schedule_data["calendar_day"]:
