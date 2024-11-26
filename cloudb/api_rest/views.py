@@ -12,11 +12,10 @@ from .models import VM
 from .utils import listar_instancias_oci, create_oci_config, validar_credenciais, validar_credenciais_aws, listar_instancias_aws
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
-#from django_q.tasks import async_task
+from django_q.tasks import async_task
 from django.http import HttpResponseBadRequest
 from .models import InstanceSchedule
-from django_q.models import Schedule
-from datetime import datetime, timedelta
+from .tasks import start_vm, on_task_complete
 
 
 
@@ -155,25 +154,9 @@ def agendar_vm(request, instance_id):
     vm = get_object_or_404(VM, instance_id=instance_id, user=request.user)
     user_cloud = vm.cloud
 
-
-
     if request.method == "POST":
-        frequency = request.POST.get("frequency")
-        week_days = request.POST.get("week_days", "")
-        time_option = request.POST.get("time_option")
-        specific_time = request.POST.get("specific_time")
-        interval = request.POST.get("interval")
-        interval_unit = request.POST.get("interval_unit")
-        time_from = request.POST.get("time_from")
-        time_to = request.POST.get("time_to")
-        occurrence = request.POST.get("occurrence")
-        day_of_week = request.POST.get("day_of_week")
-        calendar_day = request.POST.get("calendar_day")  # Pode ser vazio
-
         # Validação condicional para campos opcionais
-        if frequency == "monthly" and occurrence == "day_of_month" and not calendar_day:
-            return HttpResponseBadRequest("Calendar day is required for 'Day of Month'.")
-
+        
         # Prepare os dados para salvar no banco
         schedule_data = {
             "instance_id": instance_id,
@@ -190,30 +173,37 @@ def agendar_vm(request, instance_id):
             "day_of_week": request.POST.get("day_of_week"),
             "calendar_day": int(request.POST.get("calendar_day")) if request.POST.get("calendar_day") else None,
         }
+        print(f"TIME OPTION: {schedule_data['time_option']}")
 
-        func = 'api_rest.tasks.start_vm'  # Ajuste para o nome da função do seu backend que inicia a VM
-        args = [instance_id]  # Argumentos que serão passados para a função
+        # Rules for required fields
+        if schedule_data["frequency"] == "monthly" and schedule_data["occurrence"] == "day_of_month" and not schedule_data["calendar_day"]:
+            return HttpResponseBadRequest("Calendar day is required for 'Day of Month'.")
         
-        schedule_type = None
-        repeats = -1
+        if schedule_data["frequency"] == "daily" and not schedule_data["specific_time"] and schedule_data["time_option"] != "several":
+            return HttpResponseBadRequest("Specific time is required for 'Daily' frequency.")
+        
+        if schedule_data["frequency"] == "daily" and not schedule_data["week_days"]:
+            return HttpResponseBadRequest("Week days are required for 'Daily' frequency.")
 
-        if schedule_data.get('specific_time'):
-            specific_time = datetime.strptime(schedule_data['specific_time'], "%H:%M").time()
-            next_run = datetime.combine(datetime.now().date(), specific_time)
-        else:
-            next_run = datetime.now() + timedelta(minutes=1)  # Default para 1 minuto no futuro
-        # Salve os dados no banco
+        if schedule_data["time_option"] == "several" and (not schedule_data["time_from"] or not schedule_data["time_to"]):
+            return HttpResponseBadRequest("Time from and time to are required for 'Several Times a Day' time option.")
+        
+        # And so on...
+
+        # Objective: Apply my learnings from logic classes from university, reducing if statements using propositional logic 
+        # and boolean algebra. This is a good opportunity to apply my knowledge in practice.
+
+        # Save the schedule in the database
         try:
             schedule = InstanceSchedule.objects.create(**schedule_data)
-            Schedule.objects.create(
-                func=func,
-                args=args,
-                name=f"Startup VM {instance_id}",
-                schedule_type=schedule_type,
-                next_run=next_run,
-                repeats=schedule_data.get('repeats', -1),  # Repetições baseadas no formulário
-                q_options={"priority": 1, "group": "vm_startup"}  # Ajustes para gerenciar prioridade e agrupamento
+            schedule.save()
+
+            async_task(
+                "api_rest.tasks.start_vm", # Nome da função a ser executada
+                schedule, # Argumentos da função
+                hook="api_rest.tasks.on_task_complete" # Função de callback
             )
+            pass
         except ValueError as e:
             return HttpResponseBadRequest(str(e))
         
