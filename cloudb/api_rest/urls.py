@@ -12,4 +12,5 @@ urlpatterns = [
     path('cloud/<int:cloud_id>/instancias/', views.listar_instancias_cloud, name='listar_instancias_cloud'),
     path('aws/credentials/', views.aws_credentials_view, name='aws_credentials'),
     path('home/', views.user_home, name='user_home'),
+    path('vm/<str:instance_id>/schedule/', views.agendar_vm, name='agendar_vm'),
 ]

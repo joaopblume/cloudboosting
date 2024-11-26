@@ -3,9 +3,13 @@
  *
  * If you need the full config, get it from here:
  * https://unpkg.com/browse/tailwindcss@latest/stubs/defaultConfig.stub.js
+ * 
  */
+/** @type {import('tailwindcss').Config} */
 
 module.exports = {
+    darkMode: 'class',
+
     content: [
         /**
          * HTML. Paths to Django template files that will contain Tailwind CSS classes.
@@ -13,6 +17,7 @@ module.exports = {
 
         /*  Templates within theme app (<tailwind_app_name>/templates), e.g. base.html. */
         '../templates/**/*.html',
+        '../static/scripts/**/*.js',
 
         /*
          * Main templates directory of the project (BASE_DIR/templates).
@@ -42,8 +47,18 @@ module.exports = {
         // '../../**/*.py'
     ],
     theme: {
-        extend: {},
-    },
+        extend: {
+          colors: {
+            oserv: {
+              900: '#00102e',
+            },
+          },
+          fontFamily: {
+            sans: ['Doto', 'ui-sans-serif', 'system-ui'],
+            rubik: ['"Rubik 80s Fade"', 'cursive'],
+          },
+        },
+      },
     plugins: [
         /**
          * '@tailwindcss/forms' is the forms plugin that provides a minimal styling

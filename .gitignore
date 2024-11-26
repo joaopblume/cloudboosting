@@ -1,3 +1,4 @@
 venv/
 mod_wsgi-5.0.1/
 cloudb/db.sqlite3
+node-v22.11.0-linux-x64/

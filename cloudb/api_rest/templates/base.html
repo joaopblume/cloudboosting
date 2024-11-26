@@ -2,6 +2,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     {% tailwind_css %}
     <meta charset="UTF-8">
@@ -9,26 +10,45 @@
     <title>{% block title %}Cloud Boosting{% endblock %}</title>
 
     <!-- Incluindo o arquivo CSS principal -->
-    <link rel="stylesheet" href="{% static 'api_rest/css/styles.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Doto:wght@800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{% static 'images/rocket_icon.png' %}">
     
-    <style>
-        /* Cor de fundo padrão para o projeto */
-        body {
-            background-color: #1d2029;
-            color: #e0e0e0; /* Cor do texto */
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-    </style>
     
     {% block extra_css %}{% endblock %}
 </head>
-<body>
-    <div class="main-container">
+<body class="bg-white-900 text-white min-h-screen">
+    <nav class="p-5 bg-white shadow md:flex md:items-center md:justify-between">
+
+        <!-- Logo e Nome -->
+        <div class="flex items-center space-x-3">
+            <img class="h-10 cursor-pointer" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXVnkqHx8aYUHka-1ETLtgnY_b-O8pfh0zbQ&s" alt="Logo Oserv Tecnologia">
+            <span class="text-2xl font-semibold cursor-pointer font-sans text-gray-800">Oserv Tecnologia</span>
+        </div>
+        
+        <!-- Links -->
+        <ul class="flex space-x-6 mt-4 md:mt-0">
+            <li>
+                <a class="text-lg text-gray-800 hover:text-orange-500 transition duration-300" href="{% url 'index' %}">Home</a>
+            </li>
+            <li>
+                <a class="text-lg text-gray-800 hover:text-orange-500 transition duration-300" href="/felicidade">Contact</a>
+            </li>
+            <li>
+                <a class="text-lg text-gray-800 hover:text-orange-500 transition duration-300" href="/felicidade">Service</a>
+            </li>
+            <li>
+                <a class="text-lg text-gray-800 hover:text-orange-500 transition duration-300" href="/felicidade">About</a>
+            </li>
+        </ul>
+    </nav>
+
+
         {% block content %}{% endblock %}
     </div>
-
-    {% block extra_js %}{% endblock %}
+    {% block extra_js %}
+        /*<script src="{% static 'scripts/dark_mode_toggle.js' %}"></script>
+    {% endblock %}
 </body>
 </html>

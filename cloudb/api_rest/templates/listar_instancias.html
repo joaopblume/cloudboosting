@@ -1,29 +1,45 @@
 {% extends 'base.html' %}
 
-{% load static %}
-
-{% block extra_css %}
-<link rel="stylesheet" type="text/css" href="{% static 'api_rest/css/styles.css' %}">
-{% endblock %}
-
 {% block content %}
-<div class="grid-container">
-    {% for instance in instances %}
-    <div class="card">
-        <div class="card-title">{{ instance.display_name }}</div>
-        <div class="card-text">Compartment: {{ instance.compartment_name }}</div>
-        <div class="card-text">
-            <span class="status-indicator 
-                  {% if instance.lifecycle_state == 'RUNNING' %}status-green
-                  {% elif instance.lifecycle_state == 'STOPPED' %}status-red
-                  {% else %}status-yellow{% endif %}">
-            </span> {{ instance.lifecycle_state }}
+<div class="min-h-screen bg-orange-500 flex justify-center items-center">
+    <!-- Div externa branca com borda arredondada -->
+    <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-4xl p-6">
+        <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Instâncias</h1>
+        <div class="space-y-4">
+            <!-- Lista de instâncias -->
+            {% for instance in instances %}
+            <div class="bg-gray-100 p-4 rounded-lg shadow-md flex items-center justify-between">
+                <!-- Informações da instância -->
+                <div class="flex flex-col flex-1">
+                    <h2 class="text-xl font-semibold text-gray-800">{{ instance.display_name }}</h2>
+                    <p class="text-sm text-gray-600">Compartment: {{ instance.compartment_name }}</p>
+                </div>
+            
+                <!-- Botão de agendamento -->
+                <div class="flex-shrink-0 w-32 flex justify-center">
+                    <a href="{% url 'agendar_vm' instance.instance_id %}" 
+                    class="bg-green-500 hover:bg-green-400 text-black font-bold py-2 px-4 rounded transition duration-300">
+                     Schedule
+                 </a>
+                </div>
+            
+                <!-- Status da instância -->
+                <div class="flex items-center space-x-2">
+                    <span class="inline-block w-4 h-4 rounded-full 
+                        {% if instance.lifecycle_state == 'RUNNING' %}bg-green-500
+                        {% elif instance.lifecycle_state == 'STOPPED' %}bg-red-500
+                        {% else %}bg-yellow-500{% endif %}">
+                    </span>
+                    <span class="text-sm text-gray-800">{{ instance.lifecycle_state }}</span>
+                </div>
+            </div>
+            {% empty %}
+            <!-- Mensagem caso nenhuma instância seja encontrada -->
+            <div class="bg-gray-100 p-4 rounded-lg shadow-md">
+                <p class="text-center text-gray-800">Nenhuma instância encontrada.</p>
+            </div>
+            {% endfor %}
         </div>
     </div>
-    {% empty %}
-    <div class="card">
-        <p>Nenhuma instância encontrada.</p>
-    </div>
-    {% endfor %}
 </div>
 {% endblock %}
