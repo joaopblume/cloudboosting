@@ -15,7 +15,8 @@ from django.contrib.auth.forms import AuthenticationForm
 from django_q.tasks import async_task
 from django.http import HttpResponseBadRequest
 from .models import InstanceSchedule
-from .tasks import start_vm, on_task_complete
+from .models import IntervalSchedule
+import json
 
 
 
@@ -152,64 +153,49 @@ def user_home(request):
 @login_required
 def agendar_vm(request, instance_id):
     vm = get_object_or_404(VM, instance_id=instance_id, user=request.user)
-    user_cloud = vm.cloud
 
     if request.method == "POST":
-        # Validação condicional para campos opcionais
-        
-        # Prepare os dados para salvar no banco
-        schedule_data = {
-            "instance_id": instance_id,
-            "user": request.user,
-            "frequency": request.POST.get("frequency"),
-            "week_days": request.POST.get("week_days", ""),
-            "specific_time": request.POST.get("specific_time") or None,
-            "time_option": request.POST.get("time_option"),
-            "interval": int(request.POST.get("interval")) if request.POST.get("interval") else None,
-            "interval_unit": request.POST.get("interval_unit"),
-            "time_from": request.POST.get("time_from") or None,
-            "time_to": request.POST.get("time_to") or None,
-            "occurrence": request.POST.get("occurrence"),
-            "day_of_week": request.POST.get("day_of_week"),
-            "calendar_day": int(request.POST.get("calendar_day")) if request.POST.get("calendar_day") else None,
-        }
-
-        # Rules for required fields
-        if schedule_data["frequency"] == "monthly" and schedule_data["occurrence"] == "day_of_month" and not schedule_data["calendar_day"]:
-            return HttpResponseBadRequest("Calendar day is required for 'Day of Month'.")
-        
-        if schedule_data["frequency"] == "daily" and not schedule_data["specific_time"] and schedule_data["time_option"] != "several":
-            return HttpResponseBadRequest("Specific time is required for 'Daily' frequency.")
-        
-        if schedule_data["frequency"] == "daily" and not schedule_data["week_days"]:
-            return HttpResponseBadRequest("Week days are required for 'Daily' frequency.")
-
-        if schedule_data["time_option"] == "several" and (not schedule_data["time_from"] or not schedule_data["time_to"]):
-            return HttpResponseBadRequest("Time from and time to are required for 'Several Times a Day' time option.")
-        
-        # And so on...
-
-        # Objective: Apply my learnings from logic classes from university, reducing if statements using propositional logic 
-        # and boolean algebra. This is a good opportunity to apply my knowledge in practice.
-
-        # Save the schedule in the database
+        # Recuperar e processar os dados enviados no formulário
         try:
-            schedule = InstanceSchedule.objects.create(**schedule_data)
-            schedule.save()
+            intervals_data = request.POST.get("intervals", "[]")  # Não faz JSON parse ainda
+            print("Raw Intervals Data:", intervals_data)  # Log para depuração
+            intervals_data = json.loads(intervals_data)  # Tenta fazer o parse
+        except json.JSONDecodeError:
+            return HttpResponseBadRequest(f"Invalid intervals data: {intervals_data}")
 
-            async_task(
-                "api_rest.tasks.start_vm", # Nome da função a ser executada
-                schedule, # Argumentos da função
-                hook="api_rest.tasks.on_task_complete" # Função de callback
+        if not intervals_data:
+            return HttpResponseBadRequest("No intervals provided.")
+
+        # Validar e salvar os intervalos
+        saved_intervals = []
+        for interval in intervals_data:
+            inicio = interval.get("inicio")
+            fim = interval.get("fim")
+
+            # Validar se ambos os horários estão presentes
+            if not inicio or not fim:
+                return HttpResponseBadRequest("Both 'inicio' and 'fim' are required for each interval.")
+
+            # Validar se 'inicio' é menor que 'fim'
+            if inicio >= fim:
+                return HttpResponseBadRequest(f"'inicio' ({inicio}) must be earlier than 'fim' ({fim}).")
+
+            # Salvar o intervalo no banco de dados
+            saved_intervals.append(
+                IntervalSchedule.objects.create(
+                    instance_id=instance_id,
+                    user=request.user,
+                    time_from=inicio,
+                    time_to=fim,
+                )
             )
-            pass
-        except ValueError as e:
-            return HttpResponseBadRequest(str(e))
-        
-        return redirect("listar_instancias_cloud", cloud_id=user_cloud.id)
 
-    week_days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-    return render(request, "agendar_vm.html", {"week_days": week_days, "instance_id": instance_id})
+        # Retornar sucesso e redirecionar
+        return redirect("listar_instancias_cloud", cloud_id=vm.cloud.id)
+
+    hours = [f"{i:02d}" for i in range(25)]  # Lista de 00 a 24 horas
+
+    return render(request, "agendar_vm.html", {"instance_id": instance_id, "hours": hours})
 
 
 

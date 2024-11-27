@@ -14,6 +14,7 @@ class OCICredentials(models.Model):
 
     def __str__(self):
         return f"Credenciais OCI de {self.user.username}"
+    
 
 class AWSCredentials(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -64,6 +65,16 @@ class InstanceSchedule(models.Model):
 
     def __str__(self):
         return f"Schedule for {self.instance_id} by {self.user.username}"
+    
+
+class IntervalSchedule(models.Model):
+    instance_id = models.CharField(max_length=255)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    time_from = models.TimeField()
+    time_to = models.TimeField()
+
+    def __str__(self):
+        return f"Interval Schedule for {self.instance_id} by {self.user.username}"
 # class CloudProvider(models.Model):
 #     name = models.CharField(max_length=100)
 
