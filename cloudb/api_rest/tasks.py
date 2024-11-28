@@ -16,7 +16,6 @@ def start_vm(agendamento: InstanceSchedule):
     print(agendamento)
     print(f"Iniciando a VM com ID {agendamento.instance_id}")
     print(f"Horario: {agendamento.specific_time}")
-        # Aqui você chamaria sua API para iniciar a VM
 
     schedule_type_map = {
         "daily": Schedule.DAILY,
@@ -51,9 +50,16 @@ def start_vm(agendamento: InstanceSchedule):
         minutes=agendamento.interval if agendamento.interval_unit == "minutes" else None,
         next_run=next_run,  # Próxima execução
         repeats=-1 if agendamento.frequency == "daily" else 1,  # Repetir indefinidamente para diário
-        name=f"Agendamento para VM {agendamento.instance_id}"
+        name=f"Agendamento para VM {agendamento.instance_id}",
+        hook="api_rest.tasks.completed_schedule"
     )
     print(f"Agendamento criado para {agendamento.instance_id} no Django Q.")
+
+
+def completed_schedule(task):
+    print(f"Tarefa {task} completa!")
+    print("Aqui você pode adicionar o código para desligar a VM.")
+
 
 def executed_task(tarefa):
     print("Executando tarefa")

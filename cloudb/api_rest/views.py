@@ -194,8 +194,10 @@ def agendar_vm(request, instance_id):
         return redirect("listar_instancias_cloud", cloud_id=vm.cloud.id)
 
     hours = [f"{i:02d}" for i in range(25)]  # Lista de 00 a 24 horas
+    week_days = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"]
 
-    return render(request, "agendar_vm.html", {"instance_id": instance_id, "hours": hours})
+
+    return render(request, "agendar_vm.html", {"instance_id": instance_id, "hours": hours, "week_days": week_days})
 
 
 

@@ -57,11 +57,16 @@
                 <span>Limpar</span>
             </button>
         </div>
+        
         <div class="flex justify-end space-x-4 mt-8">
+            <button type="button" id="continue-schedule" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-bold transition duration-300">
+                Continue
+            </button>
             <form method="post" action="{% url 'agendar_vm' instance_id=instance_id %}">
                 {% csrf_token %}
                 <input type="hidden" name="intervals" id="intervals-data">
-                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-bold transition duration-300">
+                
+                <button type="submit" id="submit-schedule" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-bold transition duration-300">
                     Submit
                 </button>
             </form>
@@ -72,11 +77,43 @@
     </div>
 </div>
 
+<!-- Tela de Repetições -->
+<div id="repetition-screen" class="hidden min-h-screen bg-orange-200 flex justify-center items-center absolute inset-0 z-50">
+    <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-4xl p-8">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">Repetições</h1>
+        <p class="text-gray-600 text-center mb-6">Selecione os dias da semana para executar este agendamento:</p>
+
+        <!-- Botões de Dias da Semana -->
+        <div class="flex justify-center space-x-2">
+            {% for day in week_days %}
+            <button type="button" class="day-button px-4 py-2 rounded-lg font-semibold border border-gray-300 hover:bg-orange-500 hover:text-white transition">
+                {{ day }}
+            </button>
+            {% endfor %}
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="flex justify-end space-x-4 mt-8">
+            <button type="button" id="back-to-timeline" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-lg font-bold transition duration-300">
+                Voltar
+            </button>
+            <button type="button" id="confirm-repetition" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-bold transition duration-300">
+                Confirmar
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const timelineContainer = document.getElementById('timeline-container');
+    const continueButton = document.getElementById('continue-schedule');
     const timeline = document.getElementById('timeline');
+    const timelineScreen = document.querySelector('.min-h-screen');
     const zoomDisplay = document.getElementById('zoom-display'); // Elipse de Zoom
+    const repetitionScreen = document.getElementById('repetition-screen');
+    const backButton = document.getElementById('back-to-timeline');
+    const confirmRepetitionButton = document.getElementById('confirm-repetition');
     let draggedPoint = null;
     let isDragging = false;
 
@@ -121,6 +158,70 @@ document.addEventListener('DOMContentLoaded', function () {
             draggedPoint = newPoint;
             //Mostra a elipse
             isDragging = false; // Reinicia a flag
+        });
+    });
+
+    continueButton.addEventListener('click', function () {
+        const points = Array.from(document.querySelectorAll('#timeline > div'));
+        const intervals = [];
+
+        points.sort((a, b) => parseFloat(a.style.left) - parseFloat(b.style.left));
+
+        let currentInterval = null;
+
+        points.forEach(point => {
+            const state = point.getAttribute('data-state');
+            const positionX = parseFloat(point.style.left);
+            const totalMinutes = Math.round((positionX / 100) * 1440);
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            const time = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+
+            if (state === 'on') {
+                currentInterval = { inicio: time };
+            } else if (state === 'off' && currentInterval) {
+                currentInterval.fim = time;
+                intervals.push(currentInterval);
+                currentInterval = null;
+            }
+        });
+
+        // Confirmação
+        if (confirm(`Você confirma os intervalos: ${JSON.stringify(intervals)}?`)) {
+            // Fazer fade out da tela atual
+            timelineScreen.classList.add('opacity-0');
+            setTimeout(() => {
+                timelineScreen.classList.add('hidden');
+                repetitionScreen.classList.remove('hidden');
+                repetitionScreen.classList.add('opacity-100');
+            }, 500); // Tempo para o fade-out
+        }
+    });
+    // Voltar para a timeline
+    backButton.addEventListener('click', function () {
+        repetitionScreen.classList.add('opacity-0');
+        setTimeout(() => {
+            repetitionScreen.classList.add('hidden');
+            timelineScreen.classList.remove('hidden');
+            timelineScreen.classList.add('opacity-100');
+        }, 500);
+    });
+    
+    // Confirmar os dias selecionados
+    confirmRepetitionButton.addEventListener('click', function () {
+        const selectedDays = Array.from(document.querySelectorAll('.day-button.active')).map(button =>
+            button.textContent.trim()
+        );
+        console.log('Dias Selecionados:', selectedDays);
+        alert(`Você selecionou os dias: ${selectedDays.join(', ')}`);
+    });
+
+    // Selecionar ou deselecionar dias
+    document.querySelectorAll('.day-button').forEach(button => {
+        button.addEventListener('click', function () {
+            this.classList.toggle('active');
+            this.classList.toggle('bg-orange-500');
+            this.classList.toggle('text-white');
         });
     });
 
@@ -199,6 +300,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 currentInterval.fim = time;
                 intervals.push(currentInterval);
                 currentInterval = null;
+            } else {
+                console.error('Invalid state:', state);
             }
         });
 
@@ -206,6 +309,8 @@ document.addEventListener('DOMContentLoaded', function () {
         intervalsField.value = JSON.stringify(intervals);
 
         console.log('Intervalos Enviados:', intervals); // Log para verificar os dados gerados
+
+        
     });
 });
 
