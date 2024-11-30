@@ -187,7 +187,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         // Confirmação
-        if (confirm(`Você confirma os intervalos: ${JSON.stringify(intervals)}?`)) {
+        intervalsConfirmationString = intervals.map(interval => `${interval.inicio} - ${interval.fim}`).join(',\n');
+        if (confirm(`Você confirma os intervalos: \n${intervalsConfirmationString}?`)) {
             // Fazer fade out da tela atual
             timelineScreen.classList.add('opacity-0');
             setTimeout(() => {
