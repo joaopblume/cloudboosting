@@ -87,6 +87,8 @@
             <form method="post" action="{% url 'agendar_vm' instance_id=instance_id %}">
                 {% csrf_token %}
                 <input type="hidden" name="intervals" id="intervals-data">
+                <input type="hidden" name="repetition" id="repetition-data">
+
                 
                 <button type="submit" id="submit-schedule" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-bold transition duration-300">
                     Submit
@@ -103,16 +105,64 @@
 <div id="repetition-screen" class="is-hidden fixed inset-0 z-50 flex items-center justify-center">
     <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-4xl p-8">
         <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">Repetições</h1>
-        <p class="text-gray-600 text-center mb-6">Selecione os dias da semana para executar este agendamento:</p>
-        <!-- Botões de Dias da Semana -->
-        <div class="flex justify-center space-x-2">
-            {% for day in week_days %}
-            <button type="button" class="day-button px-4 py-2 rounded-lg font-semibold border border-gray-300 hover:bg-orange-500 hover:text-white transition">
-                {{ day }}
-            </button>
-            {% endfor %}
-        </div>
+            <!-- Opções de Repetição -->
+            <div class="flex justify-center mb-6">
+                <button id="weekly-option" class="repetition-option bg-orange-500 text-white active px-4 py-2 mx-2 rounded-lg font-semibold border border-gray-300 hover:bg-orange-500 hover:text-white transition active">
+                    Semanalmente
+                </button>
+                <button id="specific-days-option" class="repetition-option px-4 py-2 mx-2 rounded-lg font-semibold border text-black border-gray-300 hover:bg-orange-500 hover:text-white transition">
+                    Dia específico do mês
+                </button>
+            </div>
+            
+            <!-- Conteúdo da Opção Semanal -->
+            <div id="weekly-content">
+                <p class="text-gray-600 text-center mb-6">Selecione os dias da semana para executar este agendamento:</p>
+                <!-- Botões de Dias da Semana -->
+                <div class="flex justify-center space-x-2">
+                    {% for day in week_days %}
+                    <button type="button" class="day-button px-4 py-2 rounded-lg font-semibold border text-black  border-gray-300 hover:bg-orange-500 hover:text-white transition">
+                        {{ day }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
 
+            <!-- Conteúdo da Opção de Dias Específicos -->
+            <div id="specific-days-content" class="hidden">
+                <p class="text-gray-600 text-center mb-6">Selecione as datas específicas para executar este agendamento:</p>
+                <div id="custom-calendar" class="flex justify-center">
+                    <div class="text-center">
+                        <div class="flex items-center justify-center text-gray-900">
+                            <button type="button" id="prev-month" class="-m-1.5 flex items-center justify-center p-1.5 text-gray-400 hover:text-gray-500">
+                                <span class="sr-only">Previous month</span>
+                                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            <div class="flex-auto text-sm font-semibold month-year-display"></div>
+                            <button type="button" id="next-month" class="-m-1.5 flex items-center justify-center p-1.5 text-gray-400 hover:text-gray-500">
+                                <span class="sr-only">Next month</span>
+                                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="mt-6 grid grid-cols-7 text-xs leading-6 text-gray-500">
+                            <div>S</div>
+                            <div>T</div>
+                            <div>Q</div>
+                            <div>Q</div>
+                            <div>S</div>
+                            <div>S</div>
+                            <div>D</div>
+                        </div>
+                        <div class="isolate mt-2 grid grid-cols-7 gap-px rounded-lg bg-gray-200 text-sm shadow ring-1 ring-gray-200 days-grid">
+                            <!-- Os botões de dias serão gerados dinamicamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
         <!-- Botões de Ação -->
         <div class="flex justify-end space-x-4 mt-8">
             <button type="button" id="back-to-timeline" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded-lg font-bold transition duration-300">
@@ -135,8 +185,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const backButton = document.getElementById('back-to-timeline');
     const confirmRepetitionButton = document.getElementById('confirm-repetition');
     const timelineModal = document.getElementById('timeline-modal');
+    const repetitionOptions = document.querySelectorAll('.repetition-option');
+    const weeklyContent = document.getElementById('weekly-content');
+    const specificDaysContent = document.getElementById('specific-days-content');
+    const customCalendar = document.getElementById('custom-calendar');
+    let selectedDates = []; // Armazena as datas selecionadas
     let draggedPoint = null;
     let isDragging = false;
+    let currentDate = new Date();
+
 
     // Clique para criar pontos
     timelineContainer.addEventListener('click', function (event) {
@@ -226,12 +283,17 @@ document.addEventListener('DOMContentLoaded', function () {
             timelineScreen.classList.add('opacity-100');
         }, 500);
     });
-    
+
+    function initializeCustomCalendar() {
+        renderCalendar(currentDate);
+    }
+
     // Confirmar os dias selecionados
     confirmRepetitionButton.addEventListener('click', function () {
         const selectedDays = Array.from(document.querySelectorAll('.day-button.active')).map(button =>
             button.textContent.trim()
         );
+
         console.log('Dias Selecionados:', selectedDays);
         alert(`Você selecionou os dias: ${selectedDays.join(', ')}`);
     });
@@ -297,6 +359,202 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('Timeline cleared.');
         
     });
+
+     // Função para alternar entre as opções
+     repetitionOptions.forEach(option => {
+        option.addEventListener('click', function () {
+            // Remover classe 'active' de todas as opções
+            repetitionOptions.forEach(opt => opt.classList.remove('active', 'bg-orange-500', 'text-white'));
+            repetitionOptions.forEach(opt => opt.classList.add('text-black'));
+            // Adicionar classe 'active' à opção selecionada
+            this.classList.add('active', 'bg-orange-500', 'text-white');
+            
+            // Mostrar o conteúdo correspondente
+            if (this.id === 'weekly-option') {
+                weeklyContent.classList.remove('hidden');
+                specificDaysContent.classList.add('hidden');
+            } else if (this.id === 'specific-days-option') {
+                weeklyContent.classList.add('hidden');
+                specificDaysContent.classList.remove('hidden');
+                // Inicializar o calendário se ainda não foi feito
+                if (!customCalendar.classList.contains('initialized')) {
+                    initializeDatePicker();
+                    customCalendar.classList.add('initialized');
+                }
+            }
+        });
+    });
+
+    // Função para inicializar o calendário
+
+
+    // Ao confirmar a repetição
+    confirmRepetitionButton.addEventListener('click', function () {
+        const selectedOption = document.querySelector('.repetition-option.active').id;
+        if (selectedOption === 'weekly-option') {
+            // Obter os dias da semana selecionados
+            const selectedDays = Array.from(document.querySelectorAll('.day-button.active')).map(button =>
+                button.textContent.trim()
+            );
+            console.log('Dias da Semana Selecionados:', selectedDays);
+            alert(`Você selecionou os dias: ${selectedDays.join(', ')}`);
+        } else if (selectedOption === 'specific-days-option') {
+            // Utilizar as datas selecionadas no calendário
+            console.log('Datas Específicas Selecionadas:', selectedDates);
+             // Utilizar as datas selecionadas no calendário
+             repetitionData = {
+                type: 'specific-days',
+                dates: selectedDates
+            };
+        }
+
+        // Armazenar os dados no campo oculto do formulário
+        const repetitionField = document.getElementById('repetition-data');
+        repetitionField.value = JSON.stringify(repetitionData);
+
+        // Submeter o formulário ou continuar com o fluxo desejado
+        alert('Repetição configurada com sucesso!');
+        repetitionScreen.classList.remove('is-visible');
+        repetitionScreen.classList.add('is-hidden');
+    });
+
+    // Função para renderizar o calendário
+    function renderCalendar(date) {
+        const year = date.getFullYear();
+        const month = date.getMonth();
+
+        // Obter o primeiro dia do mês
+        const firstDayOfMonth = new Date(year, month, 1);
+        console.log(firstDayOfMonth.getDay());
+        const startingDay = firstDayOfMonth.getDay(); // 0 (Domingo) a 6 (Sábado)
+
+        // Obter o número de dias no mês
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        console.log(`Dias no mês ${month + 1}/${year}: ${daysInMonth}`);
+        // Obter o nome do mês
+        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+
+        // Atualizar o nome do mês no calendário
+        const monthYearDisplay = customCalendar.querySelector('.month-year-display');
+        monthYearDisplay.textContent = `${monthNames[month]} ${year}`;
+
+        // Gerar a grade de dias
+        const daysGrid = customCalendar.querySelector('.days-grid');
+        daysGrid.innerHTML = ''; // Limpar os dias anteriores
+
+        // Calcular o dia da semana do primeiro dia do mês (ajustando para que segunda-feira seja o primeiro)
+        const adjustedStartingDay = (startingDay === 0) ? 6 : startingDay - 1;
+
+        // Preencher os dias do calendário
+        let day = 1;
+        let cells = 0;
+        for (let i = 0; i < 6; i++) { // Máximo de 6 semanas
+            for (let j = 0; j < 7; j++) {
+                cells++;
+                const dayButton = document.createElement('button');
+                dayButton.type = 'button';
+                dayButton.classList.add('py-1.5', 'hover:bg-gray-100', 'focus:z-10');
+                dayButton.innerHTML = `
+                    <time datetime="" class="mx-auto flex h-7 w-7 items-center justify-center rounded-full"></time>
+                `;
+
+                const timeElement = dayButton.querySelector('time');
+
+                if (cells <= adjustedStartingDay || day > daysInMonth) {
+                    // Dias vazios
+                    dayButton.classList.add('bg-gray-50', 'text-gray-400');
+                    timeElement.textContent = '';
+                } else {
+                    // Dias atuais
+                    dayButton.classList.add('bg-white', 'text-gray-900');
+                    timeElement.textContent = day;
+                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    timeElement.setAttribute('datetime', dateStr);
+
+                    // Verificar se a data está selecionada
+                    if (selectedDates.includes(dateStr)) {
+                        dayButton.classList.add('bg-orange-500', 'text-white');
+                    }
+
+                    // Adicionar event listener para selecionar a data
+                    dayButton.addEventListener('click', function () {
+                        if (selectedDates.includes(dateStr)) {
+                            // Deselecionar a data
+                            selectedDates = selectedDates.filter(d => d !== dateStr);
+                            dayButton.classList.remove('bg-orange-500', 'text-white');
+                            dayButton.classList.add('bg-white', 'text-gray-900');
+                        } else {
+                            // Selecionar a data
+                            selectedDates.push(dateStr);
+                            dayButton.classList.add('bg-orange-500', 'text-white');
+                            dayButton.classList.remove('bg-white', 'text-gray-900');
+                        }
+                        console.log('Datas Selecionadas:', selectedDates);
+                    });
+
+                    day++;
+                }
+
+                daysGrid.appendChild(dayButton);
+
+                if (day > daysInMonth && cells % 7 === 0) {
+                    break;
+                }
+            }
+            if (day > daysInMonth) {
+                break;
+            }
+        }
+    }
+
+    // Event listeners para navegação entre meses
+    customCalendar.addEventListener('click', function (event) {
+        if (event.target.closest('#prev-month')) {
+            // Mês anterior
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar(currentDate);
+        } else if (event.target.closest('#next-month')) {
+            // Próximo mês
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar(currentDate);
+        }
+    });
+
+    // Atualizar a função de inicialização do calendário
+    function initializeDatePicker() {
+        initializeCustomCalendar();
+    }
+
+    // Função para alternar entre as opções
+    repetitionOptions.forEach(option => {
+        option.addEventListener('click', function () {
+            // Remover classe 'active' e estilos de todos os botões
+            repetitionOptions.forEach(opt => {
+                opt.classList.remove('active', 'bg-orange-500', 'text-white');
+                opt.classList.add('border-gray-300'); // Reaplica a borda cinza
+            });
+
+            // Adicionar classe 'active' e estilos ao botão selecionado
+            this.classList.add('active', 'bg-orange-500', 'text-white');
+            this.classList.remove('border-gray-300'); // Remove a borda cinza do botão ativo
+
+            // Mostrar o conteúdo correspondente
+            if (this.id === 'weekly-option') {
+                weeklyContent.classList.remove('hidden');
+                specificDaysContent.classList.add('hidden');
+            } else if (this.id === 'specific-days-option') {
+                weeklyContent.classList.add('hidden');
+                specificDaysContent.classList.remove('hidden');
+                // Inicializar o calendário se ainda não foi feito
+                if (!customCalendar.classList.contains('initialized')) {
+                    initializeDatePicker();
+                    customCalendar.classList.add('initialized');
+                }
+            }
+        });
+    });
+
 
     document.getElementById('submit-schedule').addEventListener('click', function () {
         const points = Array.from(document.querySelectorAll('#timeline > div'));
