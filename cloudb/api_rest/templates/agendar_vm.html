@@ -1,8 +1,30 @@
 {% extends 'base.html' %}
 
+
+{% block extra_css %}
+<style>
+    .is-hidden {
+        opacity: 0;
+        filter: blur(5px);
+        transform: translateX(-100%);
+        transition: all 1s;
+    }
+
+    .is-visible {
+        opacity: 1;
+        filter: blur(0);
+        transform: translateX(0);
+        transition: all 1s;
+    }
+</style>
+{% endblock %}
+
+
 {% block content %}
+
+
 <div class="min-h-screen bg-orange-500 flex justify-center items-center">
-    <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-4xl p-8">
+    <div id="timeline-modal" class="bg-white rounded-lg shadow-lg w-11/12 max-w-4xl p-8">
         <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">Schedule Timeline</h1>
 
         <!-- Linha do Tempo -->
@@ -78,11 +100,10 @@
 </div>
 
 <!-- Tela de Repetições -->
-<div id="repetition-screen" class="hidden min-h-screen bg-orange-200 flex justify-center items-center absolute inset-0 z-50">
+<div id="repetition-screen" class="is-hidden fixed inset-0 z-50 flex items-center justify-center">
     <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-4xl p-8">
         <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">Repetições</h1>
         <p class="text-gray-600 text-center mb-6">Selecione os dias da semana para executar este agendamento:</p>
-
         <!-- Botões de Dias da Semana -->
         <div class="flex justify-center space-x-2">
             {% for day in week_days %}
@@ -101,7 +122,6 @@
                 Confirmar
             </button>
         </div>
-    </div>
 </div>
 
 <script>
@@ -114,6 +134,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const repetitionScreen = document.getElementById('repetition-screen');
     const backButton = document.getElementById('back-to-timeline');
     const confirmRepetitionButton = document.getElementById('confirm-repetition');
+    const timelineModal = document.getElementById('timeline-modal');
     let draggedPoint = null;
     let isDragging = false;
 
@@ -187,13 +208,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         // Confirmação
-        if (confirm(`Você confirma os intervalos: ${JSON.stringify(intervals)}?`)) {
-            // Fazer fade out da tela atual
-            timelineScreen.classList.add('opacity-0');
+        intervalsString = intervals.map(interval => `\n${interval.inicio} - ${interval.fim}`);
+        if (confirm(`Você confirma os intervalos: ${intervalsString}?`)) {
             setTimeout(() => {
-                timelineScreen.classList.add('hidden');
-                repetitionScreen.classList.remove('hidden');
-                repetitionScreen.classList.add('opacity-100');
+                timelineModal.classList.add('is-hidden');
+                repetitionScreen.classList.remove('is-hidden');
+                repetitionScreen.classList.add('is-visible');
             }, 500); // Tempo para o fade-out
         }
     });
