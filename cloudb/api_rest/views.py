@@ -160,6 +160,8 @@ def agendar_vm(request, instance_id):
             intervals_data = request.POST.get("intervals", "[]")  # Não faz JSON parse ainda
             print("Raw Intervals Data:", intervals_data)  # Log para depuração
             intervals_data = json.loads(intervals_data)  # Tenta fazer o parse
+            repetition_data = request.POST.get("repetition", "{}")  # Não faz JSON parse ainda
+            print("Raw Repetition Data:", repetition_data)  # Log para depuração
         except json.JSONDecodeError:
             return HttpResponseBadRequest(f"Invalid intervals data: {intervals_data}")
 
