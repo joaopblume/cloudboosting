@@ -16,6 +16,7 @@ from django_q.tasks import async_task
 from django.http import HttpResponseBadRequest
 from .models import InstanceSchedule
 from .models import IntervalSchedule
+from .schedule import process_schedule
 import json
 
 
@@ -192,7 +193,23 @@ def agendar_vm(request, instance_id):
                 )
             )
 
+        # transform to dict
+        repetition_data = json.loads(repetition_data)
+
+        # Processar o agendamento
+        if repetition_data.get("type") == "weekly":
+            num_days = len(repetition_data["days"])
+            if num_days == 7:
+                repetition_data["type"] = "daily"
+
+        result = process_schedule(
+            intervals_data,
+            repetition_data,
+            func_name=f"job-{instance_id}",
+        )
         # Retornar sucesso e redirecionar
+
+        print(result)
         return redirect("listar_instancias_cloud", cloud_id=vm.cloud.id)
 
     hours = [f"{i:02d}" for i in range(25)]  # Lista de 00 a 24 horas
