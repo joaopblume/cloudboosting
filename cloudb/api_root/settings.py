@@ -150,8 +150,8 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
-#NPM_BIN_PATH = '/home/joao/django-cloudb/cloudboosting/node-v22.11.0-linux-x64/bin/npm'
-NPM_BIN_PATH = '/usr/bin/npm'
+NPM_BIN_PATH = '/home/joao/django-cloudb/cloudboosting/node-v22.11.0-linux-x64/bin/npm'
+#NPM_BIN_PATH = '/usr/bin/npm'
 
 Q_CLUSTER = {
     'name': 'DjangoQ',  
@@ -164,4 +164,25 @@ Q_CLUSTER = {
     'queue_limit': 500,
     'label': 'Django Q2',
     'orm': 'default', 
+}
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django_q': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+        'api_rest': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
 }

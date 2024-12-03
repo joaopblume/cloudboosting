@@ -1,5 +1,6 @@
 from django_q.models import Schedule
 from datetime import datetime, timedelta, date, time
+from .tasks import start, stop, start_vm_result
 
 DAYS_OF_WEEK_PT = {
     "segunda": 0,
@@ -11,14 +12,15 @@ DAYS_OF_WEEK_PT = {
     "domingo": 6,
 }
 
-def process_schedule(raw_intervals, raw_repetition, func_name, func_args=None, func_kwargs=None):
+def process_schedule(raw_intervals, raw_repetition, schedule_id, func_kwargs=None):
+
     """
     Cria agendamentos no Django-Q2 com base nos dados fornecidos.
 
     :param raw_intervals: Lista de intervalos de tempo, ex. [{"inicio": "05:19", "fim": "08:52"}].
     :param raw_repetition: Dicionário com tipo de repetição e dias, 
                            ex. {"type": "weekly", "days": ["segunda", "quarta"]}.
-    :param func_name: Nome da função a ser agendada.
+    :param func_name: Nome da função a ser agendada. (start, stop)
     :param func_args: Argumentos posicionais para a função (opcional).
     :param func_kwargs: Argumentos nomeados para a função (opcional).
     """
@@ -48,16 +50,18 @@ def process_schedule(raw_intervals, raw_repetition, func_name, func_args=None, f
 
 
                 Schedule.objects.create(
-                    func=f'{func_name}_{day}_start',
-                    args=func_args or [],
-                    kwargs=func_kwargs or {},
+                    name='Start VM',
+                    func='api_rest.tasks.start',
+                    hook='api_rest.tasks.start_vm_result',
+                    args=schedule_id,
                     schedule_type=Schedule.WEEKLY,
                     next_run=start_datetime
                 )
                 Schedule.objects.create(
-                    func=f'{func_name}_{day}_stop',
-                    args=func_args or [],
-                    kwargs=func_kwargs or {},
+                    name='Stop VM',
+                    func='api_rest.tasks.stop',
+                    hook='api_rest.tasks.stop_vm_result',
+                    args=schedule_id,
                     schedule_type=Schedule.WEEKLY,
                     next_run=end_datetime
                 )
@@ -66,16 +70,19 @@ def process_schedule(raw_intervals, raw_repetition, func_name, func_args=None, f
             print("Agendamento diário")
             # Agendamento diário
             Schedule.objects.create(
-                func=f'{func_name}_daily_start',
-                args=func_args or [],
-                kwargs=func_kwargs or {},
+                name='Start VM',
+                func='api_rest.tasks.start',
+                hook='api_rest.tasks.start_vm_result',
+                args=schedule_id,
                 schedule_type=Schedule.DAILY,
                 next_run=datetime.combine(datetime.now().date(), start_time)
+
             )
             Schedule.objects.create(
-                func=f'{func_name}_daily_stop',
-                args=func_args or [],
-                kwargs=func_kwargs or {},
+                name='Stop VM',
+                func='api_rest.tasks.stop',
+                hook='api_rest.tasks.stop_vm_result',
+                args=schedule_id,
                 schedule_type=Schedule.DAILY,
                 next_run=datetime.combine(datetime.now().date(), end_time)
             )
@@ -90,16 +97,18 @@ def process_schedule(raw_intervals, raw_repetition, func_name, func_args=None, f
                 end_datetime = datetime.combine(specific_date_obj, end_time)
 
                 Schedule.objects.create(
-                    func=func_name,
-                    args=func_args or [],
-                    kwargs=func_kwargs or {},
+                    name='Start VM',
+                    func='api_rest.tasks.start',
+                    hook='api_rest.tasks.start_vm_result',
+                    args=schedule_id,
                     schedule_type=Schedule.ONCE,
                     next_run=start_datetime
                 )
                 Schedule.objects.create(
-                    func=func_name,
-                    args=func_args or [],
-                    kwargs=func_kwargs or {},
+                    name='Stop VM',
+                    func='api_rest.tasks.stop',
+                    hook='api_rest.tasks.stop_vm_result',
+                    args=schedule_id,
                     schedule_type=Schedule.ONCE,
                     next_run=end_datetime
                 )

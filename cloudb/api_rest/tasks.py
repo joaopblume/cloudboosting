@@ -1,71 +1,91 @@
 from time import sleep
 import logging
-from .models import InstanceSchedule
-from django_q.models import Schedule
-from datetime import datetime
-
+from .models import InstanceSchedule, VM
+from .models import AWSCredentials, OCICredentials
+from .utils import start_vm_oci, stop_vm_oci
 
 
 logger = logging.getLogger(__name__)
 
-def start_vm(agendamento: InstanceSchedule):
-    """
-    Função que inicia a VM baseada no ID.
-    """
-    print("Agendamento recebido:")
-    print(agendamento)
-    print(f"Iniciando a VM com ID {agendamento.instance_id}")
-    print(f"Horario: {agendamento.specific_time}")
+def check_info(schedule_id):
+    instance_id = InstanceSchedule.objects.get(id=schedule_id).instance_id
 
-    schedule_type_map = {
-        "daily": Schedule.DAILY,
-        "monthly": Schedule.MONTHLY
-    }
+    print('Buscando o usuário')
+    user = InstanceSchedule.objects.get(id=schedule_id).user
+    print(user)
 
-    schedule_type = schedule_type_map.get(agendamento.frequency, Schedule.ONCE)
+    print('Buscando o agendamento')
+    # Verifica se o agendamento ainda é valido: 
+    if not InstanceSchedule.objects.filter(id=schedule_id).exists():
+        raise ValueError(f"Agendamento para {schedule_id} não encontrado.")
+    print('Agendamento encontrado')
+        
+    print('Buscando a cloud')
+    # Busca a cloud
+    cloud = VM.objects.get(instance_id=instance_id).cloud.cloud_type
 
-    # Calcular o próximo horário de execução
-    if agendamento.specific_time:
-        dia = agendamento.day_of_week
-        print(dia)
-        # dia da semana em ingles tudo minusculo
-        today = datetime.now().today().strftime('%A').lower()
-        specific_time = datetime.strptime(str(agendamento.specific_time), '%H:%M')
-        if dia == today:
-            # transforma o specific time em datetime  que esta no formato 
-            # 00:00 juntando com a data de hoje
-            next_run = datetime.now().replace(hour=specific_time.hour, minute=specific_time.minute)
-        else:
-            # tomorrow at specific time
-            next_run = datetime.now().replace(hour=specific_time.hour, minute=specific_time.minute)
+    return user, cloud, instance_id
 
-    else:
-        next_run = datetime.now()
+def start(schedule_id):
+    user, cloud, instance_id = check_info(schedule_id)
+    if cloud == 'OCI':
+        # Busca o config file da OCI
 
-    print(next_run)
-    Schedule.objects.create(
-        func="api_rest.tasks.executed_task",  # Função a ser chamada
-        args=f"[{agendamento.id}]",  # Passar o ID do agendamento como argumento
-        schedule_type=schedule_type,  # Tipo de agendamento
-        minutes=agendamento.interval if agendamento.interval_unit == "minutes" else None,
-        next_run=next_run,  # Próxima execução
-        repeats=-1 if agendamento.frequency == "daily" else 1,  # Repetir indefinidamente para diário
-        name=f"Agendamento para VM {agendamento.instance_id}",
-        hook="api_rest.tasks.completed_schedule"
-    )
-    print(f"Agendamento criado para {agendamento.instance_id} no Django Q.")
+        credentials = OCICredentials.objects.get(user=user)
+        print('Credenciais encontradas')
+        print(credentials)
+        print('Iniciando a VM')
+        result = start_vm_oci(credentials, instance_id)
+        return result
 
-
-def completed_schedule(task):
-    print(f"Tarefa {task} completa!")
-    print("Aqui você pode adicionar o código para desligar a VM.")
-
-
-def executed_task(tarefa):
-    print("Executando tarefa")
+    elif cloud == 'AWS':
+        # Busca o config file da AWS
+        credentials = AWSCredentials.objects.get(user=user)
+        print('Credenciais encontradas')
+        print(credentials)
     
 
-def on_task_complete(task):
-    print('Agendando tarefa, aguarde...')
-    sleep(1)
-    print(f"Tarefa agendada com sucesso! Tarefa: {task}")
+    print(f"Iniciando a vm {instance_id}")
+
+
+def start_vm_result(task):
+    """
+    Função hook para processar o resultado da tarefa start_vm_oci.
+    """
+    vm_name = task.result['vm_name']
+    status = task.result['status']
+
+    print(f'VM {vm_name} iniciada com sucesso.')
+    print(f'Status: {status}')
+
+
+
+def stop(schedule_id):
+    user, cloud, instance_id = check_info(schedule_id)
+
+    if cloud == 'OCI':
+        # Busca o config file da OCI
+
+        credentials = OCICredentials.objects.get(user=user)
+        print('Credenciais encontradas')
+        print(credentials)
+        print('Iniciando a VM')
+        result = stop_vm_oci(credentials, instance_id)
+        return result
+
+    elif cloud == 'AWS':
+        # Busca o config file da AWS
+        credentials = AWSCredentials.objects.get(user=user)
+        print('Credenciais encontradas')
+        print(credentials)
+    
+
+    print(f"Iniciando a vm {instance_id}")
+
+def stop_vm_result(task):
+    vm_name = task.result['vm_name']
+    status = task.result['status']
+
+    print(f"VM {vm_name} parada com sucesso.")
+    print(f"Status: {status}")
+

@@ -15,8 +15,8 @@ from django.contrib.auth.forms import AuthenticationForm
 from django_q.tasks import async_task
 from django.http import HttpResponseBadRequest
 from .models import InstanceSchedule
-from .models import IntervalSchedule
 from .schedule import process_schedule
+from django.db import transaction
 import json
 
 
@@ -183,15 +183,13 @@ def agendar_vm(request, instance_id):
             if inicio >= fim:
                 return HttpResponseBadRequest(f"'inicio' ({inicio}) must be earlier than 'fim' ({fim}).")
 
-            # Salvar o intervalo no banco de dados
-            saved_intervals.append(
-                IntervalSchedule.objects.create(
-                    instance_id=instance_id,
-                    user=request.user,
-                    time_from=inicio,
-                    time_to=fim,
-                )
+
+            schedule = InstanceSchedule.objects.create(
+                instance_id=instance_id,
+                user=request.user,
+                # outros campos...
             )
+            schedule_id = schedule.id
 
         # transform to dict
         repetition_data = json.loads(repetition_data)
@@ -202,14 +200,10 @@ def agendar_vm(request, instance_id):
             if num_days == 7:
                 repetition_data["type"] = "daily"
 
-        result = process_schedule(
-            intervals_data,
-            repetition_data,
-            func_name=f"job-{instance_id}",
-        )
-        # Retornar sucesso e redirecionar
 
-        print(result)
+        # Retornar sucesso e redirecionar
+        
+        transaction.on_commit(lambda: process_schedule(intervals_data, repetition_data, schedule_id))
         return redirect("listar_instancias_cloud", cloud_id=vm.cloud.id)
 
     hours = [f"{i:02d}" for i in range(25)]  # Lista de 00 a 24 horas
