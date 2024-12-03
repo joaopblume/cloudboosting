@@ -44,6 +44,66 @@ def get_all_compartments(identity_client, tenancy_id):
         print(f"Erro ao buscar compartimentos: {e}")
     return compartments
 
+def start_vm_oci(creds, instance_id):
+    config = create_oci_config(creds)
+    compute_client = oci.core.ComputeClient(config)
+    
+    try:
+        response = compute_client.instance_action(instance_id, "START")
+        vm_name = response.data.display_name
+        status = response.data.lifecycle_state
+        return {'vm_name': vm_name, 'status': status}
+    except Exception as e:
+        print(f"Erro ao iniciar a instância {instance_id}: {e}")
+        return None
+
+def stop_vm_oci(creds, instance_id):
+    config = create_oci_config(creds)
+    compute_client = oci.core.ComputeClient(config)
+    
+    try:
+        response = compute_client.instance_action(instance_id, "STOP")
+        vm_name = response.data.display_name
+        status = response.data.lifecycle_state
+        return {'vm_name': vm_name, 'status': status}
+    except Exception as e:
+        print(f"Erro ao parar a instância {instance_id}: {e}")
+        return None
+    
+
+def start_vm_aws(credentials, instance_id):
+    # Inicializar o cliente EC2 com as credenciais do usuário
+    session = boto3.Session(
+        aws_access_key_id=credentials.access_key,
+        aws_secret_access_key=credentials.secret_key,
+        region_name='us-east-1'  # Certifique-se de que a região está configurada nas credenciais
+    )
+    
+    ec2 = session.client('ec2')
+    try:
+        response = ec2.start_instances(InstanceIds=[instance_id])
+        status = response['StartingInstances'][0]['CurrentState']['Name']
+        return {'vm_name': instance_id, 'status': status}
+    except Exception as e:
+        print(f"Erro ao iniciar a instância {instance_id}: {e}")
+        return None
+    
+def stop_vm_aws(credentials, instance_id):
+    # Inicializar o cliente EC2 com as credenciais do usuário
+    session = boto3.Session(
+        aws_access_key_id=credentials.access_key,
+        aws_secret_access_key=credentials.secret_key,
+        region_name='us-east-1'  # Certifique-se de que a região está configurada nas credenciais
+    )
+    
+    ec2 = session.client('ec2')
+    try:
+        response = ec2.stop_instances(InstanceIds=[instance_id])
+        status = response['StoppingInstances'][0]['CurrentState']['Name']
+        return {'vm_name': instance_id, 'status': status}
+    except Exception as e:
+        print(f"Erro ao parar a instância {instance_id}: {e}")
+        return None
 
 def listar_instancias_oci(creds):
     config = create_oci_config(creds)
