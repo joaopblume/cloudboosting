@@ -46,15 +46,16 @@ def process_schedule(raw_intervals, raw_repetition, func_name, func_args=None, f
                 start_datetime = datetime.combine(next_date, start_time)
                 end_datetime = datetime.combine(next_date, end_time)
 
+
                 Schedule.objects.create(
-                    func=func_name,
+                    func=f'{func_name}_{day}_start',
                     args=func_args or [],
                     kwargs=func_kwargs or {},
                     schedule_type=Schedule.WEEKLY,
                     next_run=start_datetime
                 )
                 Schedule.objects.create(
-                    func=func_name,
+                    func=f'{func_name}_{day}_stop',
                     args=func_args or [],
                     kwargs=func_kwargs or {},
                     schedule_type=Schedule.WEEKLY,
@@ -65,14 +66,14 @@ def process_schedule(raw_intervals, raw_repetition, func_name, func_args=None, f
             print("Agendamento diário")
             # Agendamento diário
             Schedule.objects.create(
-                func=func_name,
+                func=f'{func_name}_daily_start',
                 args=func_args or [],
                 kwargs=func_kwargs or {},
                 schedule_type=Schedule.DAILY,
                 next_run=datetime.combine(datetime.now().date(), start_time)
             )
             Schedule.objects.create(
-                func=func_name,
+                func=f'{func_name}_daily_stop',
                 args=func_args or [],
                 kwargs=func_kwargs or {},
                 schedule_type=Schedule.DAILY,
@@ -80,7 +81,6 @@ def process_schedule(raw_intervals, raw_repetition, func_name, func_args=None, f
             )
 
         elif repetition_type == "specific-days":
-            print("Agendamento para dias específicos:", repetition_days)
             # Agendamento para datas específicas fornecidas
             specific_dates = raw_repetition.get("dates", [])
             for specific_date in specific_dates:
