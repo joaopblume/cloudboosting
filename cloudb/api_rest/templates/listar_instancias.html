@@ -14,13 +14,19 @@
                     <h2 class="text-xl font-semibold text-gray-800">{{ instance.display_name }}</h2>
                     <p class="text-sm text-gray-600">Compartment: {{ instance.compartment_name }}</p>
                 </div>
-            
+                
+                <div>
+                    <a href="{% url 'listar_agendamentos' instance.instance_id %}" 
+                        class="bg-blue-500 hover:bg-blue-400 text-black font-bold py-2 px-4 rounded transition duration-300">
+                        Schedules
+                    </a>
+                </div>
                 <!-- Botão de agendamento -->
                 <div class="flex-shrink-0 w-32 flex justify-center">
                     <a href="{% url 'agendar_vm' instance.instance_id %}" 
-                    class="bg-green-500 hover:bg-green-400 text-black font-bold py-2 px-4 rounded transition duration-300">
-                     Schedule
-                 </a>
+                        class="bg-green-500 hover:bg-green-400 text-black font-bold py-2 px-4 rounded transition duration-300">
+                        Schedule
+                    </a>
                 </div>
             
                 <!-- Status da instância -->

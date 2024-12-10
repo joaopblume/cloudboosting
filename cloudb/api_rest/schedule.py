@@ -57,6 +57,7 @@ def process_schedule(raw_intervals, raw_repetition, schedule_id, func_kwargs=Non
                     schedule_type=Schedule.WEEKLY,
                     next_run=start_datetime
                 )
+                
                 Schedule.objects.create(
                     name='Stop VM',
                     func='api_rest.tasks.stop',

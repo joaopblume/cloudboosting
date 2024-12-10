@@ -1,22 +1,22 @@
 from time import sleep
 import logging
-from .models import InstanceSchedule, VM
+from .models import Schedule, VM
 from .models import AWSCredentials, OCICredentials
 from .utils import start_vm_oci, stop_vm_oci
-
+from time import sleep
 
 logger = logging.getLogger(__name__)
 
 def check_info(schedule_id):
-    instance_id = InstanceSchedule.objects.get(id=schedule_id).instance_id
+    instance_id = Schedule.objects.get(id=schedule_id).instance_id
 
     print('Buscando o usuário')
-    user = InstanceSchedule.objects.get(id=schedule_id).user
+    user = Schedule.objects.get(id=schedule_id).user
     print(user)
 
     print('Buscando o agendamento')
     # Verifica se o agendamento ainda é valido: 
-    if not InstanceSchedule.objects.filter(id=schedule_id).exists():
+    if not Schedule.objects.filter(id=schedule_id).exists():
         raise ValueError(f"Agendamento para {schedule_id} não encontrado.")
     print('Agendamento encontrado')
         
@@ -27,10 +27,14 @@ def check_info(schedule_id):
     return user, cloud, instance_id
 
 def start(schedule_id):
+    for i in range(20):
+        print('Ainda em sleep')
+        sleep(10)
+
     user, cloud, instance_id = check_info(schedule_id)
     if cloud == 'OCI':
-        # Busca o config file da OCI
 
+        # Busca o config file da OCI
         credentials = OCICredentials.objects.get(user=user)
         print('Credenciais encontradas')
         print(credentials)

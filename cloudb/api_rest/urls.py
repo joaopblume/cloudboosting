@@ -13,4 +13,6 @@ urlpatterns = [
     path('aws/credentials/', views.aws_credentials_view, name='aws_credentials'),
     path('home/', views.user_home, name='user_home'),
     path('vm/<str:instance_id>/schedule/', views.agendar_vm, name='agendar_vm'),
+    path('vm/<str:instance_id>/schedules/', views.listar_agendamentos, name='listar_agendamentos'),
+    path('schedule/<int:schedule_id>/edit/', views.alterar_agendamento, name='alterar_agendamento'),
 ]

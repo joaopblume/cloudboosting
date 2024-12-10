@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-100 flex justify-center items-center">
+    <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-4xl p-6">
+        <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">
+            Agendamentos para Instância: {{ instance_name }}
+        </h1>
+        <div class="space-y-8">
+            {% for schedule_id, schedule_data in schedules %}
+            <!-- Link Clicável com Hover -->
+            <a href="{% url 'alterar_agendamento' schedule_id=schedule_id %}" 
+               class="block bg-gray-100 p-6 rounded-lg shadow-md text-black hover:bg-gray-200 hover:shadow-lg transition duration-300 mb-4 border border-gray-300">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-800 mb-2">Agendamento ID: {{ schedule_id }}</h2>
+                    <p><strong>Usuário:</strong> {{ schedule_data.user_name }}</p>
+                    <p><strong>Criado em:</strong> {{ schedule_data.created_at }}</p>
+
+                    <!-- Weekly Schedules -->
+                    {% if schedule_data.weekly %}
+                    <h3 class="text-md font-semibold text-gray-700 mt-4">Intervalos Semanais:</h3>
+                    <ul class="list-disc pl-6">
+                        {% for day, intervals in schedule_data.weekly.items %}
+                        <li class="mb-2">
+                            <strong>Dia:</strong> {{ day }} <br>
+                            {% for interval in intervals %}
+                            [Início: {{ interval.start }} -> Fim: {{ interval.end }}]{% if not forloop.last %} <br> {% endif %}
+                            {% endfor %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+
+                    <!-- Monthly Schedules -->
+                    {% if schedule_data.monthly %}
+                    <h3 class="text-md font-semibold text-gray-700 mt-4">Intervalos Mensais:</h3>
+                    <ul class="list-disc pl-6">
+                        {% for day, intervals in schedule_data.monthly.items %}
+                        <li class="mb-2">
+                            <strong>Dia do Mês:</strong> {{ day }} <br>
+                            {% for interval in intervals %}
+                            Início: {{ interval.start }} | Fim: {{ interval.end }}{% if not forloop.last %} , {% endif %}
+                            {% endfor %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+
+            {% if not schedules %}
+            <p class="text-center text-gray-600">Nenhum agendamento encontrado para esta instância.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

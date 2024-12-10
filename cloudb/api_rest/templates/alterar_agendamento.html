@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-100 flex justify-center items-center">
+    <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-4xl p-6">
+        <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">
+            Alterar Agendamento: {{ schedule.id }}
+        </h1>
+        <form method="POST" action="{% url 'alterar_agendamento' schedule.id %}">
+            {% csrf_token %}
+            
+            <!-- Informações Básicas -->
+            <div class="mb-6">
+                <label for="instance" class="block text-sm font-medium text-gray-700">Instância</label>
+                <input 
+                    id="instance" 
+                    type="text" 
+                    name="instance" 
+                    value="{{ schedule.instance_id }}" 
+                    class="mt-1 block w-full bg-gray-100 rounded-lg text-gray-800 border-gray-300 shadow-sm" 
+                    readonly>
+            </div>
+
+            <!-- Intervalos Semanais -->
+            {% if schedule_data.weekly %}
+            <div class="mb-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">Intervalos Semanais</h2>
+                {% for day, intervals in schedule_data.weekly.items %}
+                <div class="mb-4">
+                    <label class="block font-medium text-gray-700">{{ day }}</label>
+                    <ul class="space-y-2">
+                        {% for interval in intervals %}
+                        <li class="flex items-center space-x-4">
+                            <input 
+                                type="time" 
+                                name="weekly_start_{{ day }}_{{ forloop.counter }}" 
+                                value="{{ interval.start }}" 
+                                class="w-1/3 bg-white rounded-lg border-gray-300 shadow-sm text-gray-800">
+                            <input 
+                                type="time" 
+                                name="weekly_end_{{ day }}_{{ forloop.counter }}" 
+                                value="{{ interval.end }}" 
+                                class="w-1/3 bg-white rounded-lg border-gray-300 shadow-sm text-gray-800">
+                                <button type="button" class="bg-red-100 text-red-500 hover:bg-red-200 hover:text-red-700 px-4 py-2 rounded">Remover</button>
+                                </li>
+                        {% endfor %}
+                    </ul>
+                    <button type="button" class="mt-2 text-blue-500 hover:text-blue-700">Adicionar Intervalo</button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Intervalos Mensais -->
+            {% if schedule_data.monthly %}
+            <div class="mb-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">Intervalos Mensais</h2>
+                {% for day, intervals in schedule_data.monthly.items %}
+                <div class="mb-4">
+                    <label class="block font-medium text-gray-700">Dia: {{ day }}</label>
+                    <ul class="space-y-2">
+                        {% for interval in intervals %}
+                        <li class="flex items-center space-x-4">
+                            <input 
+                                type="time" 
+                                name="monthly_start_{{ day }}_{{ forloop.counter }}" 
+                                value="{{ interval.start }}" 
+                                class="w-1/3 bg-white rounded-lg border-gray-300 shadow-sm">
+                            <input 
+                                type="time" 
+                                name="monthly_end_{{ day }}_{{ forloop.counter }}" 
+                                value="{{ interval.end }}" 
+                                class="w-1/3 bg-white rounded-lg border-gray-300 shadow-sm">
+                            <button type="button" class="text-red-500 hover:text-red-700">Remover</button>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <button type="button" class="mt-2 text-blue-500 hover:text-blue-700">Adicionar Intervalo</button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Botões de Ação -->
+            <div class="flex justify-between">
+                <a href="{% url 'listar_agendamentos' schedule.instance_id %}" 
+                   class="bg-blue-500 hover:bg-blue-400 text-white py-2 px-4 rounded">
+                    Voltar
+                </a>
+                <button type="submit" class="bg-green-500 hover:bg-green-400 text-white py-2 px-4 rounded">
+                    Salvar Alterações
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

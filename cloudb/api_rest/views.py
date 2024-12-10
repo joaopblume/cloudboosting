@@ -9,15 +9,21 @@ from .models import OCICredentials
 from .models import AWSCredentials
 from .models import UserCloud
 from .models import VM
+from .models import Schedule
+from .models import WeeklySchedule, MonthlySchedule
+from .models import CombinedScheduleView
 from .utils import listar_instancias_oci, create_oci_config, validar_credenciais, validar_credenciais_aws, listar_instancias_aws
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import AuthenticationForm
 from django_q.tasks import async_task
 from django.http import HttpResponseBadRequest
-from .models import InstanceSchedule
 from .schedule import process_schedule
 from django.db import transaction
 import json
+from collections import defaultdict
+from itertools import groupby
+from operator import itemgetter
+
 
 
 
@@ -156,59 +162,85 @@ def agendar_vm(request, instance_id):
     vm = get_object_or_404(VM, instance_id=instance_id, user=request.user)
 
     if request.method == "POST":
-        # Recuperar e processar os dados enviados no formulário
         try:
-            intervals_data = request.POST.get("intervals", "[]")  # Não faz JSON parse ainda
-            print("Raw Intervals Data:", intervals_data)  # Log para depuração
-            intervals_data = json.loads(intervals_data)  # Tenta fazer o parse
-            repetition_data = request.POST.get("repetition", "{}")  # Não faz JSON parse ainda
-            print("Raw Repetition Data:", repetition_data)  # Log para depuração
+            # Recuperar os dados do formulário
+            intervals_data = request.POST.get("intervals", "[]")  
+            repetition_data = request.POST.get("repetition", "{}")  
+
+            # Decodificar JSON
+            intervals_data = json.loads(intervals_data) 
+            repetition_data = json.loads(repetition_data)  
         except json.JSONDecodeError:
-            return HttpResponseBadRequest(f"Invalid intervals data: {intervals_data}")
+            return HttpResponseBadRequest("Invalid intervals or repetition data.")
 
         if not intervals_data:
             return HttpResponseBadRequest("No intervals provided.")
 
-        # Validar e salvar os intervalos
+        # Criar o agendamento principal (Schedule)
+        schedule = Schedule.objects.create(
+            instance_id=instance_id,
+            user=request.user,
+        )
+
+        # Salvar intervalos de acordo com o tipo de repetição
+        repetition_type = repetition_data.get("type")
         saved_intervals = []
-        for interval in intervals_data:
-            inicio = interval.get("inicio")
-            fim = interval.get("fim")
 
-            # Validar se ambos os horários estão presentes
-            if not inicio or not fim:
-                return HttpResponseBadRequest("Both 'inicio' and 'fim' are required for each interval.")
+        if repetition_type == "weekly":
+            days = repetition_data.get("days", [])  # Lista de dias da semana
+            if not days:
+                return HttpResponseBadRequest("No days provided for weekly repetition.")
 
-            # Validar se 'inicio' é menor que 'fim'
-            if inicio >= fim:
-                return HttpResponseBadRequest(f"'inicio' ({inicio}) must be earlier than 'fim' ({fim}).")
+            for day in days:
+                for interval in intervals_data:
+                    inicio = interval.get("inicio")
+                    fim = interval.get("fim")
 
+                    # Validar horários
+                    if not inicio or not fim or inicio >= fim:
+                        return HttpResponseBadRequest("Invalid 'inicio' or 'fim' for interval.")
 
-            schedule = InstanceSchedule.objects.create(
-                instance_id=instance_id,
-                user=request.user,
-                # outros campos...
-            )
-            schedule_id = schedule.id
+                    weekly_schedule = WeeklySchedule.objects.create(
+                        schedule=schedule,
+                        day_of_week=day,
+                        time_interval_start=inicio,
+                        time_interval_end=fim,
+                    )
+                    saved_intervals.append(weekly_schedule)
 
-        # transform to dict
-        repetition_data = json.loads(repetition_data)
+        elif repetition_type == "monthly":
+            days_of_month = repetition_data.get("days_of_month", [])  # Lista de dias do mês
+            if not days_of_month:
+                return HttpResponseBadRequest("No days provided for monthly repetition.")
 
-        # Processar o agendamento
-        if repetition_data.get("type") == "weekly":
-            num_days = len(repetition_data["days"])
-            if num_days == 7:
-                repetition_data["type"] = "daily"
+            for day in days_of_month:
+                for interval in intervals_data:
+                    inicio = interval.get("inicio")
+                    fim = interval.get("fim")
 
+                    # Validar horários
+                    if not inicio or not fim or inicio >= fim:
+                        return HttpResponseBadRequest("Invalid 'inicio' or 'fim' for interval.")
 
-        # Retornar sucesso e redirecionar
-        
-        transaction.on_commit(lambda: process_schedule(intervals_data, repetition_data, schedule_id))
+                    monthly_schedule = MonthlySchedule.objects.create(
+                        schedule=schedule,
+                        day_of_month=day,
+                        time_interval_start=inicio,
+                        time_interval_end=fim,
+                    )
+                    saved_intervals.append(monthly_schedule)
+
+        else:
+            return HttpResponseBadRequest("Invalid repetition type.")
+
+        # Processar agendamento assíncrono (se aplicável)
+        transaction.on_commit(lambda: process_schedule(intervals_data, repetition_data, schedule.id))
+
         return redirect("listar_instancias_cloud", cloud_id=vm.cloud.id)
 
+    # Dados para renderizar o formulário
     hours = [f"{i:02d}" for i in range(25)]  # Lista de 00 a 24 horas
     week_days = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"]
-
 
     return render(request, "agendar_vm.html", {"instance_id": instance_id, "hours": hours, "week_days": week_days})
 
@@ -239,3 +271,82 @@ def cloud_credentials(request, cloud_name):
     else:
         # Cloud não suportada
         return redirect('register_cloud')
+    
+
+def listar_agendamentos(request, instance_id):
+    # Buscar os schedules agrupados por schedule_id
+    schedules = CombinedScheduleView.objects.filter(instance_id=instance_id)
+    vm = VM.objects.get(instance_id=instance_id)
+
+    # Agrupamento dos intervalos por schedule_id
+    grouped_schedules = defaultdict(lambda: {"user_name": None, "created_at": None, "weekly": defaultdict(list), "monthly": defaultdict(list)})
+
+    for schedule in schedules:
+        schedule_data = grouped_schedules[schedule.schedule_id]
+        schedule_data["user_name"] = schedule.user_name
+        schedule_data["created_at"] = schedule.schedule_created_at
+
+        if schedule.weekly_day:
+            schedule_data["weekly"][schedule.weekly_day].append({
+                "start": schedule.weekly_start,
+                "end": schedule.weekly_end,
+            })
+        elif schedule.monthly_day:
+            schedule_data["monthly"][schedule.monthly_day].append({
+                "start": schedule.monthly_start,
+                "end": schedule.monthly_end,
+            })
+
+    # Convertendo defaultdicts para dicts para simplificar no template
+    for schedule_id, schedule_data in grouped_schedules.items():
+        schedule_data["weekly"] = dict(schedule_data["weekly"])
+        schedule_data["monthly"] = dict(schedule_data["monthly"])
+
+    return render(
+        request,
+        'listar_agendamentos.html',
+        {
+            "schedules": grouped_schedules.items(),  # Passar como lista de pares (id, dados)
+            "instance_id": instance_id,
+            "instance_name": vm.display_name,
+        },
+    )
+
+def alterar_agendamento(request, schedule_id):
+    # Obter o agendamento pelo ID
+    schedule = get_object_or_404(Schedule, id=schedule_id)
+
+    # Estruturar os intervalos agrupados
+    schedule_data = {
+        "weekly": defaultdict(list),  # Intervalos semanais agrupados por dia
+        "monthly": defaultdict(list),  # Intervalos mensais agrupados por dia
+    }
+
+    # Buscar intervalos semanais associados
+    weekly_intervals = WeeklySchedule.objects.filter(schedule_id=schedule_id)
+    for interval in weekly_intervals:
+        schedule_data["weekly"][interval.day_of_week].append({
+            "start": interval.time_interval_start.strftime('%H:%M'),  # Converte para string
+            "end": interval.time_interval_end.strftime('%H:%M'),      # Converte para string
+        })
+
+    # Buscar intervalos mensais associados
+    monthly_intervals = MonthlySchedule.objects.filter(schedule_id=schedule_id)
+    for interval in monthly_intervals:
+        schedule_data["monthly"][interval.day_of_month].append({
+            "start": interval.time_interval_start.strftime('%H:%M'),  # Converte para string
+            "end": interval.time_interval_end.strftime('%H:%M'),      # Converte para string
+        })
+
+    # Converter defaultdict para dict
+    schedule_data["weekly"] = dict(schedule_data["weekly"])
+    schedule_data["monthly"] = dict(schedule_data["monthly"])
+
+    return render(
+        request,
+        'alterar_agendamento.html',
+        {
+            "schedule": schedule,
+            "schedule_data": schedule_data,  # Dados agrupados para o template
+        },
+    )
