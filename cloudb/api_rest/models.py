@@ -66,7 +66,7 @@ class Schedule(models.Model):
     status = models.CharField(max_length=20, default='active')
 
     def __str__(self):
-        return f"Schedule for {self.user} on {self.instance} (Next: {self.next_execution})"
+        return f"Schedule for {self.user} on {self.instance_id}"
     
     
 class WeeklySchedule(models.Model):

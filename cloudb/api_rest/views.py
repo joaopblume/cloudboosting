@@ -21,8 +21,7 @@ from .schedule import process_schedule
 from django.db import transaction
 import json
 from collections import defaultdict
-from itertools import groupby
-from operator import itemgetter
+
 
 
 
@@ -133,6 +132,9 @@ def register(request):
         if form.is_valid():
             user = form.save()
             return redirect('login')
+        else:
+            print('Cadastro invalido')
+            print(form.error_class)
     else:
         form = UserCreationForm()
     return render(request, 'register.html', {'form': form})

@@ -1,6 +1,6 @@
 from time import sleep
 import logging
-from .models import Schedule, VM, InstanceSchedule
+from .models import Schedule, VM
 from .models import AWSCredentials, OCICredentials
 from .utils import start_vm_oci, stop_vm_oci
 
@@ -39,7 +39,7 @@ def start(schedule_id):
         print(credentials)
         print('Iniciando a VM')
         result = start_vm_oci(credentials, instance_id)
-        schedule = InstanceSchedule.objects.get(id=schedule_id)
+        schedule = Schedule.objects.get(id=schedule_id)
         while True:
             # Verificar status do Schedule antes de continuar
             schedule.refresh_from_db()  # Atualiza os dados do banco
