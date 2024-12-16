@@ -316,6 +316,72 @@ def alterar_agendamento(request, schedule_id):
     # Obter o agendamento pelo ID
     schedule = get_object_or_404(Schedule, id=schedule_id)
 
+    if request.method == "POST":
+        # Dados enviados pelo formulário
+        weekly_intervals = request.POST.getlist("weekly_intervals", [])
+        monthly_intervals = request.POST.getlist("monthly_intervals", [])
+
+        # Processar os intervalos semanais
+        existing_weekly_intervals = WeeklySchedule.objects.filter(schedule_id=schedule_id)
+        existing_weekly_map = {
+            (interval.day_of_week, interval.time_interval_start, interval.time_interval_end): interval
+            for interval in existing_weekly_intervals
+        }
+        submitted_weekly_map = {
+            (day, start, end): {"day": day, "start": start, "end": end}
+            for day, start, end in weekly_intervals
+        }
+
+        # Identificar intervalos deletados
+        deleted_weekly = [
+            interval for key, interval in existing_weekly_map.items() if key not in submitted_weekly_map
+        ]
+        for interval in deleted_weekly:
+            interval.delete()
+
+        # Identificar intervalos adicionados
+        added_weekly = [
+            data for key, data in submitted_weekly_map.items() if key not in existing_weekly_map
+        ]
+        for data in added_weekly:
+            WeeklySchedule.objects.create(
+                schedule=schedule,
+                day_of_week=data["day"],
+                time_interval_start=data["start"],
+                time_interval_end=data["end"],
+            )
+
+        # Processar os intervalos mensais
+        existing_monthly_intervals = MonthlySchedule.objects.filter(schedule_id=schedule_id)
+        existing_monthly_map = {
+            (interval.day_of_month, interval.time_interval_start, interval.time_interval_end): interval
+            for interval in existing_monthly_intervals
+        }
+        submitted_monthly_map = {
+            (day, start, end): {"day": day, "start": start, "end": end}
+            for day, start, end in monthly_intervals
+        }
+
+        # Identificar intervalos deletados
+        deleted_monthly = [
+            interval for key, interval in existing_monthly_map.items() if key not in submitted_monthly_map
+        ]
+        for interval in deleted_monthly:
+            interval.delete()
+
+        # Identificar intervalos adicionados
+        added_monthly = [
+            data for key, data in submitted_monthly_map.items() if key not in existing_monthly_map
+        ]
+        for data in added_monthly:
+            MonthlySchedule.objects.create(
+                schedule=schedule,
+                day_of_month=data["day"],
+                time_interval_start=data["start"],
+                time_interval_end=data["end"],
+            )
+
+        return redirect("listar_agendamentos", instance_id=schedule.instance_id)
     # Estruturar os intervalos agrupados
     schedule_data = {
         "weekly": defaultdict(list),  # Intervalos semanais agrupados por dia
