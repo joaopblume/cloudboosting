@@ -1,9 +1,8 @@
 from time import sleep
 import logging
-from .models import Schedule, VM
+from .models import Schedule, VM, InstanceSchedule
 from .models import AWSCredentials, OCICredentials
 from .utils import start_vm_oci, stop_vm_oci
-from time import sleep
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +18,7 @@ def check_info(schedule_id):
     if not Schedule.objects.filter(id=schedule_id).exists():
         raise ValueError(f"Agendamento para {schedule_id} não encontrado.")
     print('Agendamento encontrado')
+    print('Id do agendamento: ' + str(schedule_id))
         
     print('Buscando a cloud')
     # Busca a cloud
@@ -26,30 +26,39 @@ def check_info(schedule_id):
 
     return user, cloud, instance_id
 
+
 def start(schedule_id):
-    for i in range(20):
-        print('Ainda em sleep')
-        sleep(10)
+
 
     user, cloud, instance_id = check_info(schedule_id)
-    if cloud == 'OCI':
 
+    if cloud == 'OCI':
         # Busca o config file da OCI
         credentials = OCICredentials.objects.get(user=user)
         print('Credenciais encontradas')
         print(credentials)
         print('Iniciando a VM')
         result = start_vm_oci(credentials, instance_id)
-        return result
+        schedule = InstanceSchedule.objects.get(id=schedule_id)
+        while True:
+            # Verificar status do Schedule antes de continuar
+            schedule.refresh_from_db()  # Atualiza os dados do banco
+            if schedule.status == "canceled":
+                print("A tarefa foi cancelada. Encerrando execução.")
+                return
+
+        
+            print('Executando ...')
+            sleep(5) 
 
     elif cloud == 'AWS':
         # Busca o config file da AWS
         credentials = AWSCredentials.objects.get(user=user)
         print('Credenciais encontradas')
         print(credentials)
-    
 
-    print(f"Iniciando a vm {instance_id}")
+
+
 
 
 def start_vm_result(task):

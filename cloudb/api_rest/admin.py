@@ -1,5 +1,7 @@
 from django.contrib import admin
 from .models import CombinedScheduleView
+from .models import InstanceSchedule
+
 
 @admin.register(CombinedScheduleView)
 class CombinedScheduleViewAdmin(admin.ModelAdmin):
@@ -16,3 +18,9 @@ class CombinedScheduleViewAdmin(admin.ModelAdmin):
     )
     search_fields = ('user_name', 'instance_name', 'weekly_day', 'monthly_day')
     list_filter = ('weekly_day', 'monthly_day')
+
+@admin.register(InstanceSchedule)
+class InstanceScheduleAdmin(admin.ModelAdmin):
+    list_display = ('instance_id', 'user', 'frequency', 'status')
+    list_filter = ('frequency', 'status')
+    search_fields = ('instance_id', 'user__username')

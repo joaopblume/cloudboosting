@@ -52,6 +52,18 @@ class Schedule(models.Model):
     instance_id = models.CharField(max_length=255)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+    frequency = models.CharField(max_length=20, choices=[('daily', 'Daily'), ('monthly', 'Monthly')])
+    week_days = models.CharField(max_length=255, blank=True, null=True)
+    specific_time = models.TimeField(blank=True, null=True)
+    time_option = models.CharField(max_length=20, blank=True, null=True)  # Adicione esse campo
+    interval = models.IntegerField(blank=True, null=True)  # Adicione esse campo
+    interval_unit = models.CharField(max_length=20, blank=True, null=True)  # Adicione esse campo
+    time_from = models.TimeField(blank=True, null=True)  # Adicione esse campo
+    time_to = models.TimeField(blank=True, null=True)  # Adicione esse campo
+    occurrence = models.CharField(max_length=20, blank=True, null=True)
+    day_of_week = models.CharField(max_length=20, blank=True, null=True)  # Adicione esse campo
+    calendar_day = models.IntegerField(blank=True, null=True)
+    status = models.CharField(max_length=20, default='active')
 
     def __str__(self):
         return f"Schedule for {self.user} on {self.instance} (Next: {self.next_execution})"

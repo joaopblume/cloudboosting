@@ -7,14 +7,14 @@
         opacity: 0;
         filter: blur(5px);
         transform: translateX(-100%);
-        transition: all 1s;
+        transition: all 200ms;
     }
 
     .is-visible {
         opacity: 1;
         filter: blur(0);
         transform: translateX(0);
-        transition: all 1s;
+        transition: all 200ms;
     }
 </style>
 {% endblock %}
@@ -76,7 +76,7 @@
         <div class="flex justify-end space-x-4 mt-6">
             <button type="button" id="clear-timeline" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold transition duration-300 flex items-center space-x-2">
                 <span>🧹</span>
-                <span>Limpar</span>
+                <span>Clear</span>
             </button>
         </div>
         
