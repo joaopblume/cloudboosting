@@ -83,7 +83,7 @@ WSGI_APPLICATION = 'api_root.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
+#https ://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
     'default': {
@@ -138,6 +138,7 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Azion - Application rules
 CORS_ALLOW_ORIGENS = [
     'http://localhost:8080'
 ]
@@ -164,6 +165,7 @@ Q_CLUSTER = {
     'queue_limit': 500,
     'label': 'Django Q2',
     'orm': 'default', 
+    'catch_up': False,
 }
 
 

@@ -62,6 +62,7 @@ class InstanceSchedule(models.Model):
     occurrence = models.CharField(max_length=20, blank=True, null=True)
     day_of_week = models.CharField(max_length=20, blank=True, null=True)  # Adicione esse campo
     calendar_day = models.IntegerField(blank=True, null=True)
+    status = models.CharField(max_length=20, default='active')
 
     def __str__(self):
         return f"Schedule for {self.instance_id} by {self.user.username}"

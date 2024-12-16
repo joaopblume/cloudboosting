@@ -12,6 +12,21 @@ DAYS_OF_WEEK_PT = {
     "domingo": 6,
 }
 
+
+def test_reschedule(schedule_time, repetition):
+    """
+     Recebe uma data e uma repeticao, se a data for menor do que a data hora atual, retorna uma nova data agendada para a proxima data baseada na repeticao
+    """
+    today = datetime.now()
+
+    if schedule_time < today:
+        if repetition == "daily":
+            return schedule_time + timedelta(days=1)
+        elif repetition == "weekly":
+            return schedule_time + timedelta(weeks=1)
+
+    return schedule_time
+
 def process_schedule(raw_intervals, raw_repetition, schedule_id, func_kwargs=None):
 
     """
@@ -28,14 +43,16 @@ def process_schedule(raw_intervals, raw_repetition, schedule_id, func_kwargs=Non
     repetition_type = raw_repetition.get("type")
     repetition_days = raw_repetition.get("days", [])
 
-    # Converter dias da semana para números (0-6)
+    today = datetime.now().time()
+
+    # Convert days' name in (0-6)
     repetition_days = [DAYS_OF_WEEK_PT[day.lower()] for day in repetition_days]
 
-    # Processar cada intervalo
+    # Process each interval 
     for interval in raw_intervals:
         start_time = datetime.strptime(interval["inicio"], "%H:%M").time()
         end_time = datetime.strptime(interval["fim"], "%H:%M").time()
-
+        
         if repetition_type == "weekly" and repetition_days:
             print("Agendamento semanal")
             # Agendamento semanal para dias específicos da semana
@@ -45,8 +62,8 @@ def process_schedule(raw_intervals, raw_repetition, schedule_id, func_kwargs=Non
                 delta_days = (day - today.weekday() + 7) % 7
                 next_date = today + timedelta(days=delta_days)
 
-                start_datetime = datetime.combine(next_date, start_time)
-                end_datetime = datetime.combine(next_date, end_time)
+                start_datetime = test_reschedule(datetime.combine(next_date, start_time), repetition_type)
+                end_datetime = test_reschedule(datetime.combine(next_date, end_time), repetition_type)
 
 
                 Schedule.objects.create(
