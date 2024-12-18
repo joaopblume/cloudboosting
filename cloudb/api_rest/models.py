@@ -55,13 +55,14 @@ class Schedule(models.Model):
     frequency = models.CharField(max_length=20, choices=[('daily', 'Daily'), ('monthly', 'Monthly')])
     week_days = models.CharField(max_length=255, blank=True, null=True)
     specific_time = models.TimeField(blank=True, null=True)
-    time_option = models.CharField(max_length=20, blank=True, null=True)  # Adicione esse campo
-    interval = models.IntegerField(blank=True, null=True)  # Adicione esse campo
-    interval_unit = models.CharField(max_length=20, blank=True, null=True)  # Adicione esse campo
-    time_from = models.TimeField(blank=True, null=True)  # Adicione esse campo
-    time_to = models.TimeField(blank=True, null=True)  # Adicione esse campo
+    time_option = models.CharField(max_length=20, blank=True, null=True)  
+    interval = models.IntegerField(blank=True, null=True)  
+    interval_unit = models.CharField(max_length=20, blank=True, null=True)  
+    time_from = models.TimeField(blank=True, null=True)  
+    time_to = models.TimeField(blank=True, null=True) 
     occurrence = models.CharField(max_length=20, blank=True, null=True)
-    day_of_week = models.CharField(max_length=20, blank=True, null=True)  # Adicione esse campo
+    day_of_week = models.CharField(max_length=20, blank=True, null=True) 
+    
     calendar_day = models.IntegerField(blank=True, null=True)
     status = models.CharField(max_length=20, default='active')
 

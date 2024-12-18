@@ -2,7 +2,7 @@ from time import sleep
 import logging
 from .models import Schedule, VM
 from .models import AWSCredentials, OCICredentials
-from .utils import start_vm_oci, stop_vm_oci
+from .utils import start_vm_oci, stop_vm_oci, start_vm_aws, stop_vm_aws
 
 logger = logging.getLogger(__name__)
 
@@ -28,35 +28,45 @@ def check_info(schedule_id):
 
 
 def start(schedule_id):
-
-
-    user, cloud, instance_id = check_info(schedule_id)
-
-    if cloud == 'OCI':
-        # Busca o config file da OCI
-        credentials = OCICredentials.objects.get(user=user)
-        print('Credenciais encontradas')
-        print(credentials)
-        print('Iniciando a VM')
-        result = start_vm_oci(credentials, instance_id)
+    try:
         schedule = Schedule.objects.get(id=schedule_id)
-        while True:
-            # Verificar status do Schedule antes de continuar
-            schedule.refresh_from_db()  # Atualiza os dados do banco
-            if schedule.status == "canceled":
-                print("A tarefa foi cancelada. Encerrando execução.")
-                return
 
-        
-            print('Executando ...')
-            sleep(5) 
+        if schedule.status == 'cancelled':
+            print('Agendamento cancelado, não executando.')
+            return {"status": "cancelled", "message": "Task cancelled"}
 
-    elif cloud == 'AWS':
-        # Busca o config file da AWS
-        credentials = AWSCredentials.objects.get(user=user)
-        print('Credenciais encontradas')
-        print(credentials)
+        user, cloud, instance_id = check_info(schedule_id)
 
+        if cloud == 'OCI':
+            # Busca o config file da OCI
+            credentials = OCICredentials.objects.get(user=user)
+            print('Credenciais encontradas')
+            print(credentials)
+            print('Iniciando a VM')
+
+            # Chamada da função para iniciar a VM e capturar o status
+            result = start_vm_oci(credentials, instance_id)
+            if result['status'] == 200:
+                return {"status": "success", "message": "VM started successfully", "vm_name": instance_id}
+            else:
+                return {"status": "failed", "message": "Failed to start VM", "vm_name": instance_id}
+
+        elif cloud == 'AWS':
+            # Busca o config file da AWS
+            credentials = AWSCredentials.objects.get(user=user)
+            print('Credenciais encontradas')
+            print(credentials)
+
+            # Chamada da função para iniciar a VM e capturar o status
+            result = start_vm_aws(credentials, instance_id)
+            if result['status'] == 200:
+                return {"status": "success", "message": "VM started successfully", "vm_name": instance_id}
+            else:
+                return {"status": "failed", "message": "Failed to start VM", "vm_name": instance_id}
+
+    except Exception as e:
+        print(f'Erro ao buscar informações do agendamento: {str(e)}')
+        return {"status": "error", "message": str(e)}
 
 
 
@@ -65,12 +75,16 @@ def start_vm_result(task):
     """
     Função hook para processar o resultado da tarefa start_vm_oci.
     """
-    vm_name = task.result['vm_name']
-    status = task.result['status']
+    result = task.result
 
-    print(f'VM {vm_name} iniciada com sucesso.')
-    print(f'Status: {status}')
-
+    if result["status"] == "success":
+        print(f"VM {result['vm_name']} iniciada com sucesso.")
+    elif result["status"] == "failed":
+        print(f"Falha ao iniciar a VM {result['vm_name']}: {result['message']}")
+    elif result["status"] == "cancelled":
+        print(f"Tarefa cancelada para a VM {result['vm_name']}.")
+    else:
+        print(f"Erro na execução da tarefa: {result['message']}")
 
 
 def stop(schedule_id):
